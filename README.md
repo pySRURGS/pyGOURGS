@@ -1,4 +1,4 @@
-![Binoculars](image/Gnome-system-run.png)
+![Binoculars](image/pyGOURGS.png)
 
 ## IN ACTIVE DEVELOPMENT
 
