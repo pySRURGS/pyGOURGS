@@ -1,4 +1,4 @@
-![Binoculars](image/Gnome-system-search.jpg)
+![Binoculars](image/Gnome-system-run.png)
 
 ## IN ACTIVE DEVELOPMENT
 
