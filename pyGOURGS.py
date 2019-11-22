@@ -98,6 +98,41 @@ class PrimitiveSet(object):
         return terminals
 
 
+def deinterleave_num_into_k_elements(num, k):
+    """
+    Given a binary number `num`, returns the number, deinterleaved, into k folds
+    Eg: if `k` were 2, we would be returning the odd and even bits of the number. 
+
+    Parameters
+    ----------
+    num : int
+        A number in binary.
+
+    k : int
+        An integer denoting the number of folds into which we deinterleave `num`.
+
+    Returns
+    -------
+    k_elements : list of integers
+
+    """
+    k_elements = [[None]*k]
+    num = str(num)
+    while len(num) % k != 0:
+        num = ‘0’ + num
+    for i in range(0, len(num), k):
+        for j in range(0, k):
+            k_elements[j].append(num[i+j])
+    for j in range(0, k):
+        k_elements[j] = int(’’.join(k_elements[j]))
+    return k_elements
+    
+
+def binary(num, pre='', length=16, spacer=0):
+    ''' formats a number into binary - https://stackoverflow.com/a/16926270/3549879 '''
+    return '{0}{{:{1}>{2}}}'.format(pre, spacer, length).format(bin(num)[2:])
+    
+
 def ith_n_ary_tree(i, pset):
     """
     Generates the `i`th n-ary tree
@@ -131,10 +166,16 @@ def ith_n_ary_tree(i, pset):
             n_children = arities[i % len(arities)]
             # deinterleave the number into n_children separate numbers 
             # each of which then can be called to give a child
-            left_int, right_int = get_left_right_bits(i)
-            left = ith_n_ary_tree(left_int)
-            right = ith_n_ary_tree(right_int)
-            tree = '[' + left + ', ' + right + ']'
+            i_as_bits = binary(i)
+            deinterleaved_i = deinterleave_num_into_k_elements(i, n_children)
+            subtrees = []
+            tree = '[' + ‘,’.join(subtrees) + ']'
     return tree
 
-        
+                                     
+def generate_solution(tree_index, operators_indices, terminals, pset):
+    tree = ith_n_ary_tree(i, pset)
+    operators_by_arity_dict = 
+                                     
+                                     
+                                     
