@@ -5,6 +5,8 @@ Sohrab Towfighi (C) 2019
 License: GPL 3.0
 https://github.com/pySRURGS/pyGOURGS
 '''
+from operator import add, sub, truediv, mul
+import pdb
 
 class PrimitiveSet(object):
     """    
@@ -14,7 +16,7 @@ class PrimitiveSet(object):
     Returns
     -------
     self
-        A pyGORS.PrimitiveSet object, with attributes
+        A pyGOURGS.PrimitiveSet object, with attributes
         self._terminals, self._operators.
 
     """
@@ -26,7 +28,8 @@ class PrimitiveSet(object):
 
     def add_operator(self, func_handle, arity):
         """
-        A method that adds a user-specified operator to the list of operators.
+        A method that adds a user-specified operator to the list of operators
+        stored in self._operators.
 
         Parameters
         ----------
@@ -52,7 +55,8 @@ class PrimitiveSet(object):
 
     def add_variable(self, variable):
         """
-        A method that adds a user-specified variable to the list of terminals.
+        A method that adds a user-specified variable to the list of terminals
+        stored in self._variables.
 
         Parameters
         ----------
@@ -69,7 +73,8 @@ class PrimitiveSet(object):
        
     def add_fitting_parameter(self, param_name):
         """
-        A method that adds a fitting parameter to the list of terminals.
+        A method that adds a fitting parameter to the list of terminals
+        stored in self._fitting_parameters.
 
         Parameters
         ----------
@@ -116,15 +121,17 @@ def deinterleave_num_into_k_elements(num, k):
     k_elements : list of integers
 
     """
-    k_elements = [[None]*k]
+    k_elements = []
+    for i in range(0,k):
+        k_elements.append([])
     num = str(num)
     while len(num) % k != 0:
-        num = ‘0’ + num
+        num = '0' + num
     for i in range(0, len(num), k):
         for j in range(0, k):
             k_elements[j].append(num[i+j])
     for j in range(0, k):
-        k_elements[j] = int(’’.join(k_elements[j]))
+        k_elements[j] = ''.join(k_elements[j])
     return k_elements
     
 
@@ -151,13 +158,13 @@ def ith_n_ary_tree(i, pset):
     for arity in pset._operators.keys():
         arities.append(arity)
     arities = sorted(arities)
-    permitted_arities_indices = list(range(1,len(arities)+1)
+    permitted_arities_indices = list(range(0,len(arities)))
     if i == 0:
         tree = '.'    
     else:        
-        if i in permitted_arities_indices:
+        if i-1 in permitted_arities_indices:
             temp_tree = '['
-            arity = permitted_arities_indices[i]
+            arity = arities[i-1]
             for i in range(0,arity):
                 temp_tree += '.,'
             temp_tree = temp_tree[:-1] + ']'  
@@ -167,15 +174,30 @@ def ith_n_ary_tree(i, pset):
             # deinterleave the number into n_children separate numbers 
             # each of which then can be called to give a child
             i_as_bits = binary(i)
-            deinterleaved_i = deinterleave_num_into_k_elements(i, n_children)
-            subtrees = []
-            tree = '[' + ‘,’.join(subtrees) + ']'
+            deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits, 
+                                                               n_children)
+            deinterleaved_i_decimal = [int(x, 2) for x in deinterleaved_i]
+            subtrees = [ith_n_ary_tree(x, pset) for x in deinterleaved_i_decimal]
+            tree = '[' + ','.join(subtrees) + ']'
     return tree
 
                                      
 def generate_solution(tree_index, operators_indices, terminals, pset):
     tree = ith_n_ary_tree(i, pset)
-    operators_by_arity_dict = 
+    print('fta')
+    
+if __name__ == '__main__':
+    pset = PrimitiveSet()
+    pset.add_operator(add, 2)
+    pset.add_operator(sub, 3)
+    pset.add_variable(1)
+    list_of_trees = []
+    for i in range(0,10000):
+        tree = ith_n_ary_tree(i, pset)    
+        list_of_trees.append(str(tree))
+    list_of_trees = list(set(list_of_trees))
+    print(len(list_of_trees))
+    
                                      
                                      
                                      
