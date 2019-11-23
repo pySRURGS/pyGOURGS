@@ -1,4 +1,4 @@
-![Binoculars](image/pyGOURGS.png)
+![Binoculars](image/pyGOURGS.svg)
 
 ## IN ACTIVE DEVELOPMENT
 
