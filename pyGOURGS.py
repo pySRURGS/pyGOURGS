@@ -6,6 +6,7 @@ License: GPL 3.0
 https://github.com/pySRURGS/pyGOURGS
 '''
 from operator import add, sub, truediv, mul
+import numpy as np
 import pdb
 
 class PrimitiveSet(object):
@@ -37,8 +38,8 @@ class PrimitiveSet(object):
             The name of a function which will be used in the list of operators.
 
         arity : integer
-            The number of inputs of the function `func_handle`
-            
+            The number of inputs of the function `func_handle`       
+        
         Returns
         -------
         None
@@ -154,6 +155,7 @@ def ith_n_ary_tree(i, pset):
     tree: string
         The n-ary tree as a string
     """
+    k = len(pset._operators.keys())
     arities = []
     for arity in pset._operators.keys():
         arities.append(arity)
@@ -170,13 +172,15 @@ def ith_n_ary_tree(i, pset):
             temp_tree = temp_tree[:-1] + ']'  
             tree = temp_tree
         else:
-            n_children = arities[i % len(arities)]
+            j = i % len(arities)
+            n_children = arities[j]
             # deinterleave the number into n_children separate numbers 
             # each of which then can be called to give a child
-            i_as_bits = binary(i)
+            i_as_bits = np.base_repr(i-j, k)
             deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits, 
                                                                n_children)
-            deinterleaved_i_decimal = [int(x, 2) for x in deinterleaved_i]
+            print(deinterleaved_i)
+            deinterleaved_i_decimal = [int(x, k) for x in deinterleaved_i]
             subtrees = [ith_n_ary_tree(x, pset) for x in deinterleaved_i_decimal]
             tree = '[' + ','.join(subtrees) + ']'
     return tree
@@ -189,11 +193,13 @@ def generate_solution(tree_index, operators_indices, terminals, pset):
 if __name__ == '__main__':
     pset = PrimitiveSet()
     pset.add_operator(add, 2)
-    pset.add_operator(sub, 3)
+    pset.add_operator(sub, 6)
+    pset.add_operator(truediv, 3)
     pset.add_variable(1)
     list_of_trees = []
-    for i in range(0,10000):
-        tree = ith_n_ary_tree(i, pset)    
+    for i in range(0,10):
+        tree = ith_n_ary_tree(i, pset) 
+        print(tree)
         list_of_trees.append(str(tree))
     list_of_trees = list(set(list_of_trees))
     print(len(list_of_trees))
