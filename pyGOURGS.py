@@ -107,7 +107,7 @@ class PrimitiveSet(object):
 def deinterleave_num_into_k_elements(num, k):
     """
     Given a binary number `num`, returns the number, deinterleaved, into k folds
-    Eg: if `k` were 2, we would be returning the odd and even bits of the number. 
+    Eg: if `k` were 2, we would be returning the odd and even bits of the number
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def deinterleave_num_into_k_elements(num, k):
         A number in binary.
 
     k : int
-        An integer denoting the number of folds into which we deinterleave `num`.
+        An integer denoting the number of folds into which we deinterleave `num`
 
     Returns
     -------
@@ -136,24 +136,26 @@ def deinterleave_num_into_k_elements(num, k):
     return k_elements
     
 
-def binary(num, pre='', length=16, spacer=0):
-    ''' formats a number into binary - https://stackoverflow.com/a/16926270/3549879 '''
-    return '{0}{{:{1}>{2}}}'.format(pre, spacer, length).format(bin(num)[2:])
-    
-
 def ith_n_ary_tree(i, pset):
     """
-    Generates the `i`th n-ary tree
+    Generates the `i`th n-ary tree.
+    
+    Maps from `i` to the `i`th n-ary tree using an enumeration of possible trees
+    based on the arity of the operators in `pset`.
 
     Parameters
     ----------
     i: int
         A non-negative integer which will be used to map to a unique n-ary trees
 
+    pset: pyGOURGS.PrimitiveSet object, which specifies the nature of the 
+        optimization problem
+
     Returns
     -------
     tree: string
-        The n-ary tree as a string
+        The n-ary tree as a string where `.` denotes terminal, and [ ] define 
+        an operator.
     """
     k = len(pset._operators.keys())
     arities = pset._operators.keys()
@@ -180,7 +182,7 @@ def ith_n_ary_tree(i, pset):
     return tree
 
                                      
-def generate_solution(tree_index, operators_indices, terminals, pset):
+def generate_program(tree_index, operators_indices, terminals, pset):
     tree = ith_n_ary_tree(i, pset)
     print('fta')
     
