@@ -156,32 +156,26 @@ def ith_n_ary_tree(i, pset):
         The n-ary tree as a string
     """
     k = len(pset._operators.keys())
-    arities = []
-    for arity in pset._operators.keys():
-        arities.append(arity)
+    arities = pset._operators.keys()
     arities = sorted(arities)
-    permitted_arities_indices = list(range(0,len(arities)))
     if i == 0:
-        tree = '.'    
+        tree = '.'
     else:        
-        if i-1 in permitted_arities_indices:
+        if i-1 in range(0,k):
             temp_tree = '['
             arity = arities[i-1]
             for i in range(0,arity):
                 temp_tree += '.,'
-            temp_tree = temp_tree[:-1] + ']'  
+            temp_tree = temp_tree[:-1] + ']'
             tree = temp_tree
         else:
-            j = i % len(arities)
+            j = (i - 1) % (len(arities))
             n_children = arities[j]
-            # deinterleave the number into n_children separate numbers 
-            # each of which then can be called to give a child
-            i_as_bits = np.base_repr(i-j, k)
-            deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits, 
+            i_as_bits = np.base_repr(i-j-k, k)
+            deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
                                                                n_children)
-            print(deinterleaved_i)
-            deinterleaved_i_decimal = [int(x, k) for x in deinterleaved_i]
-            subtrees = [ith_n_ary_tree(x, pset) for x in deinterleaved_i_decimal]
+            deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
+            subtrees = [ith_n_ary_tree(x, pset) for x in deinterleaved_i_deci]
             tree = '[' + ','.join(subtrees) + ']'
     return tree
 
@@ -197,9 +191,8 @@ if __name__ == '__main__':
     pset.add_operator(truediv, 3)
     pset.add_variable(1)
     list_of_trees = []
-    for i in range(0,10):
+    for i in range(0,12):
         tree = ith_n_ary_tree(i, pset) 
-        print(tree)
         list_of_trees.append(str(tree))
     list_of_trees = list(set(list_of_trees))
     print(len(list_of_trees))
