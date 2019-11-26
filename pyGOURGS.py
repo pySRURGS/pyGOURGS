@@ -183,20 +183,21 @@ class Enumerator(object):
 
     def assign_variables_from_pset(self):
         self._terminals = self._pset.get_terminals()
-        self._operators = self._pset.operators
-        self._arities = self._pset._arities
+        self._operators = self._pset._operators
+        self._arities = self._pset.get_arities()
 
     def ith_n_ary_tree(self, i):
         """
         Generates the `i`th n-ary tree.
         
-        Maps from `i` to the `i`th n-ary tree using an enumeration of possible trees
-        based on the arity of the operators in `pset`.
+        Maps from `i` to the `i`th n-ary tree using an enumeration of possible 
+        trees based on the arity of the operators in `pset`.
 
         Parameters
         ----------
         i: int
-            A non-negative integer which will be used to map to a unique n-ary trees
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
 
         pset: pyGOURGS.PrimitiveSet object, which specifies the nature of the 
             optimization problem
@@ -204,8 +205,8 @@ class Enumerator(object):
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] define 
-            an operator.
+            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            define an operator.
         """
         k = len(self._pset._operators.keys())
         arities = self._pset.get_arities()
@@ -226,18 +227,21 @@ class Enumerator(object):
                 deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
                                                                    n_children)
                 deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-                subtrees = [self.ith_n_ary_tree(x, pset) for x in deinterleaved_i_deci]
+                subtrees = [self.ith_n_ary_tree(x) for \
+                            x in deinterleaved_i_deci]
                 tree = '[' + ','.join(subtrees) + ']'
         return tree
 
     def calculate_l_i_b(self, i, b):
         """
-        Calculates the number of operators with arity `b` in tree `i`, called l_i_b
+        Calculates the number of operators with arity `b` in tree `i`, called 
+        l_i_b
 
         Parameters
         ----------
         i: int
-            A non-negative integer which will be used to map to a unique n-ary trees
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
 
         b: int 
             Maps via arities[`b`] to the arity of operators being considered
@@ -246,7 +250,6 @@ class Enumerator(object):
         -------
         l_i_b: int
             the number of operators with arity `b` in tree `i`, called l_i_b
-
         """
         pset = self._pset
         k = len(self._pset._operators.keys())
@@ -280,20 +283,21 @@ class Enumerator(object):
         Parameters
         ----------
         i: int
-            A non-negative integer which will be used to map to a unique n-ary trees
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
 
         b: int
-            Maps via arities[`b`] to the arity of operators being considered
+            Maps via `arities[b]` to the arity of operators being considered
 
         Returns
         -------
         G_i_b : int
             the number of possible configurations of operators of arity
-
         """
         arities = self._arities
-        f_i_b = len(arities[b])
-        G_i_b = mempower(f_i_b, l_i_b)
+        f_b = len(self._operators[arities[b]])
+        l_i_b = self.calculate_l_i_b(i, b)
+        G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
     def calculate_R_i(self, i):
@@ -304,22 +308,101 @@ class Enumerator(object):
         Parameters
         ----------
         i: int
-            A non-negative integer which will be used to map to a unique n-ary trees
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
 
         Returns
         -------
         R_i: int
-
+            The number of possible configurations of operators in the `i`th 
+            tree
         """
         k = len(self._pset._operators.keys())
         R_i = mpmath.mpf(1.0)
         for b in range(0, k):
+            pdb.set_trace()
             R_i = R_i * self.calculate_G_i_b(i, b)
         return R_i
 
+    def calculate_j_i(self, i):
+        """
+        Calculates the number of terminals in the `i`th tree
 
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
 
+        Returns
+        -------
+        j_i: int
+            The number of terminals in the `i`th tree 
+        """
+        k = len(self._pset._operators.keys())
+        arities = self._pset.get_arities()
+        j_i = 0
+        if i == 0:
+            return 1
+        else:        
+            if i-1 in range(0,k):
+                j_i = arities[i-1]
+                return j_i
+            else:
+                j = (i - 1) % (len(arities))
+                n_children = arities[j]
+                i_as_bits = np.base_repr(i-j-k, k)
+                deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
+                                                                   n_children)
+                deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
+                for i_deinteleaved in deinterleaved_i_deci:
+                    j_i = j_i + self.calculate_j_i(i_deinteleaved)                
+        return j_i
+        
 
+    def calculate_S_i(self, i):
+        """
+        Calculates the number of possible configurations of terminals in the 
+        `i`th tree.
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
+
+        Returns
+        -------
+        S_i: int
+            The number of possible configurations of terminals in the `i`th 
+            tree
+        """
+        m = len(self._pset.get_terminals())
+        j_i = self.calculate_j_i(i)
+        S_i = mempower(m, j_i)
+        return S_i
+
+    def calculate_Q(self, N):
+        """
+        Calculates the number of total number of solutions in the solution space
+
+        Parameters
+        ----------
+        N: int 
+            User specified maximum complexity index
+
+        Returns
+        -------
+        Q: int
+            The number of possible solutions in the solution space
+        """        
+        Q = 0
+        for i in range(0, N):
+            R_i = self.calculate_R_i(i)
+            S_i = self.calculate_S_i(i)
+            pdb.set_trace()
+            Q = Q + S_i * R_i
+        return Q
 
 if __name__ == '__main__':
     pset = PrimitiveSet()
@@ -328,6 +411,8 @@ if __name__ == '__main__':
     pset.add_operator(truediv, 3)
     pset.add_variable(1)
     enum = Enumerator(pset)
+    Q = enum.calculate_Q(5)
+    print(Q)
     list_of_trees = []
     for i in range(0,12):
         tree = enum.ith_n_ary_tree(i) 
