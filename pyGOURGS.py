@@ -6,8 +6,26 @@ License: GPL 3.0
 https://github.com/pySRURGS/pyGOURGS
 '''
 from operator import add, sub, truediv, mul
+import mpmath
 import numpy as np
 import pdb
+
+def mempower(a, b):
+    """
+    Same as pow, but able to handle extremely large values, and memoized.
+
+    Parameters
+    ----------
+    a: int
+    b: int
+
+    Returns
+    -------
+    result: mpmath.ctx_mp_python.mpf (int)
+        `a ** b`
+    """
+    result = mpmath.power(a, b)
+    return result
 
 class PrimitiveSet(object):
     """    
@@ -17,15 +35,23 @@ class PrimitiveSet(object):
     Returns
     -------
     self
-        A pyGOURGS.PrimitiveSet object, with attributes
-        self._terminals, self._operators.
+        A pyGOURGS.PrimitiveSet object
 
+    Example
+    -------
+    >>>> import pyGOURGS
+    >>>> from operator import add, sub, truediv, mul
+    >>>> pset.add_operator(add, 2)
+    >>>> pset.add_operator(sub, 2)
+    >>>> pset.add_operator(truediv, 2)
+    >>>> pset.add_variable(1)
+    >>>> pset.add_variable(0)    
     """
     def __init__(self):
         self._variables = list()
         self._fitting_parameters = list()
         self._operators = dict()
-        self._names = list()
+        self._names = list()        
 
     def add_operator(self, func_handle, arity):
         """
@@ -103,6 +129,19 @@ class PrimitiveSet(object):
         terminals = self._fitting_parameters + self._variables
         return terminals
 
+    def get_arities(self):
+        """
+        A method that returns the arities permissible in this search.
+
+        Parameters
+        ----------
+        None
+            
+        Returns
+        -------
+        arities : a sorted list of integers
+        """
+        return sorted(self._operators.keys())
 
 def deinterleave_num_into_k_elements(num, k):
     """
@@ -136,65 +175,162 @@ def deinterleave_num_into_k_elements(num, k):
     return k_elements
     
 
-def ith_n_ary_tree(i, pset):
-    """
-    Generates the `i`th n-ary tree.
+class Enumerator(object):
     
-    Maps from `i` to the `i`th n-ary tree using an enumeration of possible trees
-    based on the arity of the operators in `pset`.
+    def __init__(self, pset):
+        self._pset = pset
+        self.assign_variables_from_pset()
 
-    Parameters
-    ----------
-    i: int
-        A non-negative integer which will be used to map to a unique n-ary trees
+    def assign_variables_from_pset(self):
+        self._terminals = self._pset.get_terminals()
+        self._operators = self._pset.operators
+        self._arities = self._pset._arities
 
-    pset: pyGOURGS.PrimitiveSet object, which specifies the nature of the 
-        optimization problem
+    def ith_n_ary_tree(self, i):
+        """
+        Generates the `i`th n-ary tree.
+        
+        Maps from `i` to the `i`th n-ary tree using an enumeration of possible trees
+        based on the arity of the operators in `pset`.
 
-    Returns
-    -------
-    tree: string
-        The n-ary tree as a string where `.` denotes terminal, and [ ] define 
-        an operator.
-    """
-    k = len(pset._operators.keys())
-    arities = pset._operators.keys()
-    arities = sorted(arities)
-    if i == 0:
-        tree = '.'
-    else:        
-        if i-1 in range(0,k):
-            temp_tree = '['
-            arity = arities[i-1]
-            for i in range(0,arity):
-                temp_tree += '.,'
-            temp_tree = temp_tree[:-1] + ']'
-            tree = temp_tree
-        else:
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary trees
+
+        pset: pyGOURGS.PrimitiveSet object, which specifies the nature of the 
+            optimization problem
+
+        Returns
+        -------
+        tree: string
+            The n-ary tree as a string where `.` denotes terminal, and [ ] define 
+            an operator.
+        """
+        k = len(self._pset._operators.keys())
+        arities = self._pset.get_arities()
+        if i == 0:
+            tree = '.'
+        else:        
+            if i-1 in range(0,k):
+                temp_tree = '['
+                arity = arities[i-1]
+                for i in range(0,arity):
+                    temp_tree += '.,'
+                temp_tree = temp_tree[:-1] + ']'
+                tree = temp_tree
+            else:
+                j = (i - 1) % (len(arities))
+                n_children = arities[j]
+                i_as_bits = np.base_repr(i-j-k, k)
+                deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
+                                                                   n_children)
+                deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
+                subtrees = [self.ith_n_ary_tree(x, pset) for x in deinterleaved_i_deci]
+                tree = '[' + ','.join(subtrees) + ']'
+        return tree
+
+    def calculate_l_i_b(self, i, b):
+        """
+        Calculates the number of operators with arity `b` in tree `i`, called l_i_b
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary trees
+
+        b: int 
+            Maps via arities[`b`] to the arity of operators being considered
+
+        Returns
+        -------
+        l_i_b: int
+            the number of operators with arity `b` in tree `i`, called l_i_b
+
+        """
+        pset = self._pset
+        k = len(self._pset._operators.keys())
+        arities = pset.get_arities()
+        if i == 0:
+            l_i_b = 0
+            return l_i_b
+        if b >= 0 and b <= k-1:
+            if i == b-1:
+                l_i_b = 1
+            else:
+                l_i_b = 0
+            return l_i_b
+        else:        
+            l_i_b = 0
             j = (i - 1) % (len(arities))
             n_children = arities[j]
             i_as_bits = np.base_repr(i-j-k, k)
             deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
                                                                n_children)
             deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-            subtrees = [ith_n_ary_tree(x, pset) for x in deinterleaved_i_deci]
-            tree = '[' + ','.join(subtrees) + ']'
-    return tree
+            for i_deinteleaved in deinterleaved_i_deci:
+                l_i_b = l_i_b + self.calculate_l_i_b(i_deinteleaved, pset)
+        return l_i_b
 
-                                     
-def generate_program(tree_index, operators_indices, terminals, pset):
-    tree = ith_n_ary_tree(i, pset)
-    print('fta')
-    
+    def calculate_G_i_b(self, i, b):
+        """
+        Calculates the number of possible configurations of operators of arity 
+        `b` in the `i`th tree.
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary trees
+
+        b: int
+            Maps via arities[`b`] to the arity of operators being considered
+
+        Returns
+        -------
+        G_i_b : int
+            the number of possible configurations of operators of arity
+
+        """
+        arities = self._arities
+        f_i_b = len(arities[b])
+        G_i_b = mempower(f_i_b, l_i_b)
+        return G_i_b
+
+    def calculate_R_i(self, i):
+        """
+        Calculates the number of possible configurations of operators in the 
+        `i`th tree.
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary trees
+
+        Returns
+        -------
+        R_i: int
+
+        """
+        k = len(self._pset._operators.keys())
+        R_i = mpmath.mpf(1.0)
+        for b in range(0, k):
+            R_i = R_i * self.calculate_G_i_b(i, b)
+        return R_i
+
+
+
+
+
 if __name__ == '__main__':
     pset = PrimitiveSet()
     pset.add_operator(add, 2)
     pset.add_operator(sub, 6)
     pset.add_operator(truediv, 3)
     pset.add_variable(1)
+    enum = Enumerator(pset)
     list_of_trees = []
     for i in range(0,12):
-        tree = ith_n_ary_tree(i, pset) 
+        tree = enum.ith_n_ary_tree(i) 
         list_of_trees.append(str(tree))
     list_of_trees = list(set(list_of_trees))
     print(len(list_of_trees))
