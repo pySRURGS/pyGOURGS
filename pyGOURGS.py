@@ -298,6 +298,7 @@ class Enumerator(object):
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
         G_i_b = mempower(f_b, l_i_b)
+        pdb.set_trace()
         return G_i_b
 
     def calculate_R_i(self, i):
@@ -320,7 +321,6 @@ class Enumerator(object):
         k = len(self._pset._operators.keys())
         R_i = mpmath.mpf(1.0)
         for b in range(0, k):
-            pdb.set_trace()
             R_i = R_i * self.calculate_G_i_b(i, b)
         return R_i
 
