@@ -257,8 +257,8 @@ class Enumerator(object):
         if i == 0:
             l_i_b = 0
             return l_i_b
-        if b >= 0 and b <= k-1:
-            if i == b-1:
+        if b <= k-1:
+            if b == i-1:
                 l_i_b = 1
             else:
                 l_i_b = 0
@@ -298,7 +298,6 @@ class Enumerator(object):
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
         G_i_b = mempower(f_b, l_i_b)
-        pdb.set_trace()
         return G_i_b
 
     def calculate_R_i(self, i):
@@ -400,7 +399,6 @@ class Enumerator(object):
         for i in range(0, N):
             R_i = self.calculate_R_i(i)
             S_i = self.calculate_S_i(i)
-            pdb.set_trace()
             Q = Q + S_i * R_i
         return Q
 
@@ -411,7 +409,9 @@ if __name__ == '__main__':
     pset.add_operator(truediv, 3)
     pset.add_variable(1)
     enum = Enumerator(pset)
-    Q = enum.calculate_Q(5)
+    Q = enum.calculate_Q(5)    
+    aa = enum.calculate_G_i_b(100,0)
+    pdb.set_trace()    
     print(Q)
     list_of_trees = []
     for i in range(0,12):
