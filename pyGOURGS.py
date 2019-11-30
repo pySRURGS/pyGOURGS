@@ -10,6 +10,20 @@ import mpmath
 import numpy as np
 import pdb
 
+def print_grid(list_iter_0, list_iter_1, funchandle):
+    '''
+        Function used for debugging purposes during development.
+    '''
+    grid = np.zeros((len(list_iter_0), len(list_iter_1)))
+    for i in range(0,len(list_iter_0)):
+        for j in range(0,len(list_iter_1)):
+            try: 
+                grid[i][j] = funchandle(list_iter_0[i], list_iter_1[j])
+            except Exception as e:
+                grid[i][j] = -1
+    print(grid)
+
+
 def mempower(a, b):
     """
     Same as pow, but able to handle extremely large values, and memoized.
@@ -267,6 +281,9 @@ class Enumerator(object):
             l_i_b = 0
             j = (i - 1) % (len(arities))
             n_children = arities[j]
+            # raise exception if i-j-k < 0:
+            if i-j-k < 0:
+                raise Exception("Invalid setup")    
             i_as_bits = np.base_repr(i-j-k, k)
             deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
                                                                n_children)
@@ -295,8 +312,11 @@ class Enumerator(object):
             the number of possible configurations of operators of arity
         """
         arities = self._arities
+        pdb.set_trace()
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
+        if l_i_b == 1:
+            pdb.set_trace()
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
@@ -405,21 +425,11 @@ class Enumerator(object):
 if __name__ == '__main__':
     pset = PrimitiveSet()
     pset.add_operator(add, 2)
-    pset.add_operator(sub, 6)
-    pset.add_operator(truediv, 3)
+    pset.add_operator(sub, 2)
+    pset.add_operator(truediv, 2)
     pset.add_variable(1)
     enum = Enumerator(pset)
-    Q = enum.calculate_Q(5)    
-    aa = enum.calculate_G_i_b(100,0)
-    pdb.set_trace()    
-    print(Q)
-    list_of_trees = []
-    for i in range(0,12):
-        tree = enum.ith_n_ary_tree(i) 
-        list_of_trees.append(str(tree))
-    list_of_trees = list(set(list_of_trees))
-    print(len(list_of_trees))
+    i_list = range(0,10)
+    b_list = range(0,10)
+    print_grid(i_list, b_list, enum.calculate_G_i_b)
     
-                                     
-                                     
-                                     
