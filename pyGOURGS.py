@@ -317,7 +317,7 @@ class Enumerator(object):
             list_bits = deinterleave(e_base_arity, m)
             list_bits_deci = [base_m_to_decimal(u, m) \
                                  for u in list_bits]
-            subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]            
+            subtrees = [self.ith_n_ary_tree(x) for x in list_bits_deci]
             tree = '[' + ','.join(subtrees) + ']'
         return tree
 
