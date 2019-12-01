@@ -157,36 +157,115 @@ class PrimitiveSet(object):
         """
         return sorted(self._operators.keys())
 
-def deinterleave_num_into_k_elements(num, k):
+def decimal_to_base_m(v, m):
     """
-    Given a binary number `num`, returns the number, deinterleaved, into k folds
-    Eg: if `k` were 2, we would be returning the odd and even bits of the number
+    A function that converts a decimal number to arbitary base number 
+
+    Parameters
+    ----------
+    v: int
+        The integer in decimal to convert
+        
+    m: int
+        The base of the number system to which we are converting 
+        
+    Returns
+    -------
+    result: list of int         
+    """
+    def numberToBase(n, b):
+        if n == 0:
+            return [0]
+        digits = []
+        while n:
+            digits.append(int(n % b))
+            n //= b
+        return digits[::-1]
+    if m == 1:
+        result = []
+        for i in range(0, v):
+            result.append(1)
+    elif m >= 2:
+        result = numberToBase(v, m)
+    else:
+        raise Exception("Invalid m")
+    return result
+
+def base_m_to_decimal(v, m):
+    """
+    A function that converts a base m number to decimal base number 
+
+    Parameters
+    ----------
+    v: int (or list of int when the output of `decimal_to_base_m` is considered)
+        The integer in base m to convert
+        
+    m: int
+        The base of the number system from which we are converting 
+        
+    Returns
+    -------
+    result: int        
+    """
+    if m > 10 and type(v) is int:
+        msg = "Cannot handle m > 10 and type(v) is int. Input v as list"
+        raise Exception(msg)
+    if m == 1:
+        if type(v) is int:
+            v = str(v)
+        elif type(v) is list:
+            v = [str(i) for i in v]
+            v = ''.join(v)
+        else:
+            raise Exception("Invalid type of v")
+        result = 0
+        for i in v:
+            result = result + int(i)            
+    elif m >= 2:
+        if type(v) is int:
+            number = [int(i) for i in str(v)]            
+        elif type(v) is list:
+            number = v
+        else:
+            raise Exception("Invalid type of v")
+        result = 0
+        reversed_number = list(reversed(number))
+        for i in range(0,len(number)):
+            result = result + reversed_number[i] * m**i            
+    else:
+        raise Exception("Invalid m")
+    return result    
+
+def deinterleave(num, m):
+    """
+    Given a binary number `num`, returns the number, deinterleaved, into m folds
+    Eg: if `m` were 2, we would be returning the odd and even bits of the number
 
     Parameters
     ----------
     num : int
         A number in binary.
 
-    k : int
+    m : int
         An integer denoting the number of folds into which we deinterleave `num`
 
     Returns
     -------
-    k_elements : list of integers
+    m_elements : list of integers
 
     """
-    k_elements = []
-    for i in range(0,k):
-        k_elements.append([])
+    m_elements = []
+    for i in range(0,m):
+        m_elements.append([])
     num = str(num)
-    while len(num) % k != 0:
+    while len(num) % m != 0:
         num = '0' + num
-    for i in range(0, len(num), k):
-        for j in range(0, k):
-            k_elements[j].append(num[i+j])
-    for j in range(0, k):
-        k_elements[j] = ''.join(k_elements[j])
-    return k_elements
+    for i in range(0, len(num), m):
+        for j in range(0, m):
+            m_elements[j].append(num[i+j])
+    for j in range(0, m):
+        m_elements[j] = ''.join(m_elements[j])
+    return m_elements
     
 
 class Enumerator(object):
@@ -238,8 +317,7 @@ class Enumerator(object):
                 j = (i - 1) % (len(arities))
                 n_children = arities[j]
                 i_as_bits = np.base_repr(i-j-k, k)
-                deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
-                                                                   n_children)
+                deinterleaved_i = deinterleave(i_as_bits, n_children)
                 deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
                 subtrees = [self.ith_n_ary_tree(x) for \
                             x in deinterleaved_i_deci]
