@@ -315,7 +315,7 @@ class Enumerator(object):
         else:
             j = (i - 1) % k
             m = arities[j]
-            j = i-1
+            j = i-j-k
             v_m = decimal_to_base_m(j, m)
             deinterleaved_v_m = deinterleave(v_m, m)
             deinterleaved_v_d = [base_m_to_decimal(u, m) \
