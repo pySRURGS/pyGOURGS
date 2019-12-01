@@ -353,11 +353,11 @@ class Enumerator(object):
             l_i_b = 0
             j = (i - 1) % k
             m = arities[j]
-            v_m = decimal_to_base_m(i-1, k)
-            deinterleaved_v_m = deinterleave(v_m, m)
-            deinterleaved_v_d = [base_m_to_decimal(u, m) \
-                                 for u in deinterleaved_v_m]
-            for i_deinterleaved in deinterleaved_v_d:
+            e_base_arity = decimal_to_base_m(e, m)
+            list_bits = deinterleave(e_base_arity, m)
+            list_bits_deci = [base_m_to_decimal(u, m) \
+                                 for u in list_bits]
+            for i_deinterleaved in list_bits_deci:
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
@@ -403,6 +403,8 @@ class Enumerator(object):
             The number of possible configurations of operators in the `i`th 
             tree
         """
+        if i == 0:
+            return 0
         k = len(self._pset._operators.keys())
         R_i = mpmath.mpf(1.0)
         for b in range(0, k):

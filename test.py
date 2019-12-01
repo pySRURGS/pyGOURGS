@@ -3,7 +3,6 @@ from pyGOURGS import decimal_to_base_m, base_m_to_decimal
 import unittest
 from operator import add, sub, truediv, mul
 
-
 class TestNumberBaseConversions(unittest.TestCase):
 
     def test_base_one(self):
@@ -45,23 +44,22 @@ class TestSymbolicRegression(unittest.TestCase):
 
     def test_count_unique_trees(self):
         trees = list()
-        N_trees = 2000
+        N_trees = 200
         for i in range(0,N_trees):
             tree = self.enum.ith_n_ary_tree(i)
             trees.append(tree)
-            print(tree)
         self.assertEqual(len(list(set(trees))), N_trees)
 
     def test_terminal(self):
         self.assertEqual(self.enum.ith_n_ary_tree(0), '.')
 
-    def test_operator(self):
+    def test_operator_1(self):
         self.assertEqual(self.enum.ith_n_ary_tree(1), '[.]')
 
-    def test_operator(self):
+    def test_operator_2(self):
         self.assertEqual(self.enum.ith_n_ary_tree(2), '[.,.]')
 
-    def test_operator(self):
+    def test_operator_3(self):
         self.assertEqual(self.enum.ith_n_ary_tree(3), '[.,.,.]')
 
     def test_count_operators_0(self):
@@ -74,6 +72,11 @@ class TestSymbolicRegression(unittest.TestCase):
         self.assertEqual(self.enum.calculate_l_i_b(2, 1), 1)
         self.assertEqual(self.enum.calculate_l_i_b(2, 0), 0)
 
+    def test_count_total_configurations_0(self):
+        self.assertEqual(self.enum.calculate_R_i(0),0)
+        self.assertEqual(self.enum.calculate_R_i(1),1)
+        self.assertEqual(self.enum.calculate_R_i(2),1)
+        
 
 if __name__ == '__main__':
     unittest.main()
