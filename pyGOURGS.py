@@ -181,6 +181,8 @@ def decimal_to_base_m(v, m):
             digits.append(int(n % b))
             n //= b
         return digits[::-1]
+    if v == 0:
+        return [0]
     if m == 1:
         result = []
         for i in range(0, v):
@@ -261,11 +263,10 @@ def deinterleave(num, m):
         num.insert(0,0)
     for i in range(0, len(num), m):
         for j in range(0, m):
-            m_elements[j].append(num[i+j])
+            m_elements[j].append(str(num[i+j]))
     for j in range(0, m):
-        m_elements[j] = int("".join(map(str, m_elements[j])))
+        m_elements[j] = int("".join(m_elements[j]))
     return m_elements
-    
 
 class Enumerator(object):
     
@@ -314,10 +315,10 @@ class Enumerator(object):
         else:
             j = (i - 1) % k
             m = arities[j]
-            v = i-j-k
-            v_m = decimal_to_base_m(v, k)
+            j = i-1
+            v_m = decimal_to_base_m(j, m)
             deinterleaved_v_m = deinterleave(v_m, m)
-            deinterleaved_v_d = [base_m_to_decimal(u, k) \
+            deinterleaved_v_d = [base_m_to_decimal(u, m) \
                                  for u in deinterleaved_v_m]
             subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]
             tree = '[' + ','.join(subtrees) + ']'
@@ -325,7 +326,7 @@ class Enumerator(object):
 
     def calculate_l_i_b(self, i, b):
         """
-        Calculates the number of operators with arity `b` in tree `i`, called 
+        Calculates the number of operators, with arity `b` in tree `i`, called 
         l_i_b
 
         Parameters
@@ -339,34 +340,28 @@ class Enumerator(object):
 
         Returns
         -------
-        l_i_b: int
-            the number of operators with arity `b` in tree `i`, called l_i_b
+        l_i_b: int            
         """
         pset = self._pset
         k = len(self._pset._operators.keys())
         arities = pset.get_arities()
         if i == 0:
             l_i_b = 0
-            return l_i_b
-        if b <= k-1:
+        elif i in range(1, k+1):
             if b == i-1:
                 l_i_b = 1
             else:
                 l_i_b = 0
-            return l_i_b
         else:        
             l_i_b = 0
-            j = (i - 1) % (len(arities))
-            n_children = arities[j]
-            # raise exception if i-j-k < 0:
-            if i-j-k < 0:
-                raise Exception("Invalid setup")    
-            i_as_bits = np.base_repr(i-j-k, k)
-            deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
-                                                               n_children)
-            deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-            for i_deinteleaved in deinterleaved_i_deci:
-                l_i_b = l_i_b + self.calculate_l_i_b(i_deinteleaved, pset)
+            j = (i - 1) % k
+            m = arities[j]
+            v_m = decimal_to_base_m(i-1, k)
+            deinterleaved_v_m = deinterleave(v_m, m)
+            deinterleaved_v_d = [base_m_to_decimal(u, m) \
+                                 for u in deinterleaved_v_m]
+            for i_deinterleaved in deinterleaved_v_d:
+                l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
     def calculate_G_i_b(self, i, b):
@@ -389,11 +384,8 @@ class Enumerator(object):
             the number of possible configurations of operators of arity
         """
         arities = self._arities
-        pdb.set_trace()
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
-        if l_i_b == 1:
-            pdb.set_trace()
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
@@ -451,8 +443,8 @@ class Enumerator(object):
                 deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
                                                                    n_children)
                 deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-                for i_deinteleaved in deinterleaved_i_deci:
-                    j_i = j_i + self.calculate_j_i(i_deinteleaved)                
+                for i_deinterleaved in deinterleaved_i_deci:
+                    j_i = j_i + self.calculate_j_i(i_deinterleaved)                
         return j_i
         
 
