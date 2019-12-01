@@ -29,6 +29,21 @@ class TestNumberBaseConversions(unittest.TestCase):
                          pyGOURGS.base_m_to_decimal(pyGOURGS.decimal_to_base_m(
                                                     183513434438,94),94))
 
+class TestITH_NARY_TREE(unittest.TestCase):
+    def setUp(self):
+        self.pset = pyGOURGS.PrimitiveSet()        
+        self.pset.add_operator(add, 2)
+        self.pset.add_operator(sub, 2)
+        self.pset.add_operator(truediv, 2)
+        self.pset.add_variable(1)
+        self.enum = pyGOURGS.Enumerator(self.pset)
+        
+    def test_terminal(self):
+
+        self.assertEqual(self.enum, '.')
+        self.assertEqual(pyGOURGS.base_m_to_decimal(11111,1), 5)
+        self.assertEqual(pyGOURGS.base_m_to_decimal([1,1,1,1,1],1), 5)
+
 if __name__ == '__main__':
     unittest.main()
 
