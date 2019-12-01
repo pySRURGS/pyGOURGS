@@ -294,35 +294,29 @@ class Enumerator(object):
             A non-negative integer which will be used to map to a unique n-ary 
             trees
 
-        pset: pyGOURGS.PrimitiveSet object, which specifies the nature of the 
-            optimization problem
-
         Returns
         -------
         tree: string
             The n-ary tree as a string where `.` denotes terminal, and [ ] 
             define an operator.
-        """
-        k = len(self._pset._operators.keys())
+        """        
         arities = self._pset.get_arities()
+        k = len(arities)
         if i == 0:
             tree = '.'
         elif i in range(1, k+1):
-            temp_tree = '['
-            arity = arities[i-1]
-            for i in range(0, arity):
-                temp_tree += '.,'
-            temp_tree = temp_tree[:-1] + ']'
-            tree = temp_tree
+            tree = '['
+            m = arities[i-1]
+            for i in range(0, m):
+                tree += '.,'
+            tree = tree[:-1] + ']'
         else:
-            e, j = divmod(i-1, k)
-            e = e - 1
-            m = arities[j]
-            v_m = decimal_to_base_m(e, 2)
-            deinterleaved_v_m = deinterleave(v_m, m)
-            deinterleaved_v_d = [base_m_to_decimal(u, 2) \
-                                 for u in deinterleaved_v_m]
-            
+            e, j = divmod(i-1, k)            
+            m = arities[j]            
+            e_base_arity = decimal_to_base_m(e, m)
+            list_bits = deinterleave(e_base_arity, m)
+            list_bits_deci = [base_m_to_decimal(u, m) \
+                                 for u in list_bits]
             subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]            
             tree = '[' + ','.join(subtrees) + ']'
         return tree
