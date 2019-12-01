@@ -5,7 +5,7 @@ Sohrab Towfighi (C) 2019
 License: GPL 3.0
 https://github.com/pySRURGS/pyGOURGS
 '''
-from operator import add, sub, truediv, mul
+
 import mpmath
 import numpy as np
 import pdb
@@ -238,13 +238,13 @@ def base_m_to_decimal(v, m):
 
 def deinterleave(num, m):
     """
-    Given a binary number `num`, returns the number, deinterleaved, into m folds
+    Given a number `num`, returns the number, deinterleaved, into m folds
     Eg: if `m` were 2, we would be returning the odd and even bits of the number
 
     Parameters
     ----------
-    num : int
-        A number in binary.
+    num : list of ints 
+        The number being deinterleaved
 
     m : int
         An integer denoting the number of folds into which we deinterleave `num`
@@ -257,14 +257,13 @@ def deinterleave(num, m):
     m_elements = []
     for i in range(0,m):
         m_elements.append([])
-    num = str(num)
     while len(num) % m != 0:
-        num = '0' + num
+        num.insert(0,0)
     for i in range(0, len(num), m):
         for j in range(0, m):
             m_elements[j].append(num[i+j])
     for j in range(0, m):
-        m_elements[j] = ''.join(m_elements[j])
+        m_elements[j] = int("".join(map(str, m_elements[j])))
     return m_elements
     
 
@@ -305,23 +304,23 @@ class Enumerator(object):
         arities = self._pset.get_arities()
         if i == 0:
             tree = '.'
-        else:        
-            if i-1 in range(0,k):
-                temp_tree = '['
-                arity = arities[i-1]
-                for i in range(0,arity):
-                    temp_tree += '.,'
-                temp_tree = temp_tree[:-1] + ']'
-                tree = temp_tree
-            else:
-                j = (i - 1) % (len(arities))
-                n_children = arities[j]
-                i_as_bits = np.base_repr(i-j-k, k)
-                deinterleaved_i = deinterleave(i_as_bits, n_children)
-                deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-                subtrees = [self.ith_n_ary_tree(x) for \
-                            x in deinterleaved_i_deci]
-                tree = '[' + ','.join(subtrees) + ']'
+        elif i in range(1, k+1):
+            temp_tree = '['
+            arity = arities[i-1]
+            for i in range(0, arity):
+                temp_tree += '.,'
+            temp_tree = temp_tree[:-1] + ']'
+            tree = temp_tree
+        else:
+            j = (i - 1) % k
+            m = arities[j]
+            v = i-j-k
+            v_m = decimal_to_base_m(v, k)
+            deinterleaved_v_m = deinterleave(v_m, m)
+            deinterleaved_v_d = [base_m_to_decimal(u, k) \
+                                 for u in deinterleaved_v_m]
+            subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]
+            tree = '[' + ','.join(subtrees) + ']'
         return tree
 
     def calculate_l_i_b(self, i, b):
