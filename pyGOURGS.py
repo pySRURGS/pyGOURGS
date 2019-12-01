@@ -173,6 +173,8 @@ def decimal_to_base_m(v, m):
     -------
     result: list of int         
     """
+    if v < 0:
+        raise Exception("Do not supply negative values")
     def numberToBase(n, b):
         if n == 0:
             return [0]
@@ -313,14 +315,15 @@ class Enumerator(object):
             temp_tree = temp_tree[:-1] + ']'
             tree = temp_tree
         else:
-            j = (i - 1) % k
+            e, j = divmod(i-1, k)
+            e = e - 1
             m = arities[j]
-            j = i-j-k
-            v_m = decimal_to_base_m(j, m)
+            v_m = decimal_to_base_m(e, 2)
             deinterleaved_v_m = deinterleave(v_m, m)
-            deinterleaved_v_d = [base_m_to_decimal(u, m) \
+            deinterleaved_v_d = [base_m_to_decimal(u, 2) \
                                  for u in deinterleaved_v_m]
-            subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]
+            
+            subtrees = [self.ith_n_ary_tree(x) for x in deinterleaved_v_d]            
             tree = '[' + ','.join(subtrees) + ']'
         return tree
 
