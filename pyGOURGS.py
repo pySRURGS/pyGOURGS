@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 '''
-pyGOURGS - Global Optimization via Uniform Random Global Search
-Sohrab Towfighi (C) 2019
-License: GPL 3.0
+pyGOURGS - Global Optimization via Uniform Random Global Search;
+Sohrab Towfighi (C) 2019;
+Licence: GPL 3.0;
 https://github.com/pySRURGS/pyGOURGS
 '''
 
@@ -277,6 +277,9 @@ class Enumerator(object):
         self.assign_variables_from_pset()
 
     def assign_variables_from_pset(self):
+        '''
+        Helper function used when initiating an Enumerator instance.
+        '''
         self._terminals = self._pset.get_terminals()
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
@@ -491,6 +494,9 @@ class Enumerator(object):
             S_i = self.calculate_S_i(i)
             Q = Q + S_i * R_i
         return Q
+
+    #def generate_solution(i, r, s):
+#        pass
 
 if __name__ == '__main__':
     pset = PrimitiveSet()
