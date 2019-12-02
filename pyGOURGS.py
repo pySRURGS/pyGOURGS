@@ -201,7 +201,7 @@ def base_m_to_decimal(v, m):
 
     Parameters
     ----------
-    v: int (or list of int when the output of `decimal_to_base_m` is considered)
+    v: int (or list of int when the output of 'decimal_to_base_m' is considered)
         The integer in base m to convert
         
     m: int
