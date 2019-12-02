@@ -545,6 +545,32 @@ class Enumerator(object):
         return Q, weights
 
     def generate_potential_solution(self, i, r, s, N):        
+        """
+        Generates a candidate solution given all the indices that map to the
+        solution space
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
+
+        r: int
+            A non-negative integer which will be used to map to a configuration 
+            of the operators 
+
+        s: int
+            A non-negative integer which will be used to map to a configuration 
+            of the terminals       
+
+        N: int 
+            User specified maximum complexity index
+            
+        Returns
+        -------
+        solution: int
+            The candidate solution generated from the supplied indices
+        """       
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r >= R_i or r < 0:
@@ -554,6 +580,10 @@ class Enumerator(object):
         if i > N:
             raise Exception("Invalid value of i w.r.t. N")
         tree = self.ith_n_ary_tree(i)
+        # for each arity, the integer value r needs to map to a set of operator
+        # that are to be used 
+        #
+        # the integer value s needs to map to a set of terminals to be used 
         #operator_config = 
         #terminal_config = 
 
