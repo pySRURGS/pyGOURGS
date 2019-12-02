@@ -26,7 +26,7 @@ def print_grid(list_iter_0, list_iter_1, funchandle):
 
 def mempower(a, b):
     """
-    Same as pow, but able to handle extremely large values, and memoized.
+    Same as pow, but able to handle extremely large values.
 
     Parameters
     ----------
