@@ -23,6 +23,50 @@ def print_grid(list_iter_0, list_iter_1, funchandle):
                 grid[i][j] = -1
     print(grid)
 
+def get_element_of_cartesian_product(*args, repeat=1, index=0):
+    """
+    Access a specific element of a cartesian product, without needing to iterate
+    through the entire product.
+
+    Parameters
+    ----------
+    args: iterable
+        A set of iterables whose cartesian product is being accessed
+
+    repeat: int
+        If `args` is only one object, `repeat` specifies the number of times
+        to take the cartesian product with itself.
+
+    index: int
+        The index of the cartesian product which we want to access
+
+    Returns
+    -------
+    ith_item: the `index`th element of the cartesian product
+    """
+    pools = [tuple(pool) for pool in args] * repeat
+    if len(pools) == 0:
+        return []
+    len_product = len(pools[0])
+    len_pools = len(pools)
+    for j in range(1, len_pools):
+        len_product = len_product * len(pools[j])
+    if index >= len_product:
+        raise Exception("index + 1 is bigger than the length of the product")
+    index_list = []
+    for j in range(0, len_pools):
+        ith_pool_index = index
+        denom = 1
+        for k in range(j + 1, len_pools):
+            denom = denom * len(pools[k])
+        ith_pool_index = ith_pool_index // denom
+        if j != 0:
+            ith_pool_index = ith_pool_index % len(pools[j])
+        index_list.append(ith_pool_index)
+    ith_item = []
+    for index in range(0, len_pools):
+        ith_item.append(pools[index][index_list[index]])
+    return ith_item
 
 def mempower(a, b):
     """
@@ -489,14 +533,29 @@ class Enumerator(object):
             The number of possible solutions in the solution space
         """        
         Q = 0
+        weights = list()
         for i in range(0, N):
             R_i = self.calculate_R_i(i)
             S_i = self.calculate_S_i(i)
-            Q = Q + S_i * R_i
-        return Q
+            product = S_i * R_i
+            weights.append(product)
+            Q = Q + product
+        weights = np.array(weights)
+        weights = weights / np.sum(weights)
+        return Q, weights
 
-    #def generate_solution(i, r, s):
-#        pass
+    def generate_potential_solution(self, i, r, s, N):        
+        R_i = self.calculate_R_i(i)
+        S_i = self.calculate_S_i(i)
+        if r >= R_i or r < 0:
+            raise Exception("Invalid value of r")
+        if s >= S_i or s < 0:
+            raise Exception("Invalid value of s")
+        if i > N:
+            raise Exception("Invalid value of i w.r.t. N")
+        tree = self.ith_n_ary_tree(i)
+        #operator_config = 
+        #terminal_config = 
 
 if __name__ == '__main__':
     pset = PrimitiveSet()
