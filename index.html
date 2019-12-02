@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>pyGOURGS API documentation</title>
+<meta name="description" content="pyGOURGS - Global Optimization via Uniform Random Global Search;
+Sohrab Towfighi (C) 2019;
+Licence: GPL 3.0;
+https://github.com/pySRURGS/pyGOURGS" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pyGOURGS</code></h1>
+</header>
+<section id="section-intro">
+<p>pyGOURGS - Global Optimization via Uniform Random Global Search;
+Sohrab Towfighi (C) 2019;
+Licence: GPL 3.0;
+<a href="https://github.com/pySRURGS/pyGOURGS">https://github.com/pySRURGS/pyGOURGS</a></p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyGOURGS.base_m_to_decimal"><code class="name flex">
+<span>def <span class="ident">base_m_to_decimal</span></span>(<span>v, m)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A function that converts a base m number to decimal base number </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>v</code></strong> :&ensp;<code>int</code> (or <code>list</code> of <code>int</code> <code>when</code> <code>the</code> <code>output</code> of <code>'decimal_to_base_m'</code> <code>is</code> <code>considered</code>)</dt>
+<dd>The integer in base m to convert</dd>
+<dt><strong><code>m</code></strong> :&ensp;<code>int</code></dt>
+<dd>The base of the number system from which we are converting</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>result</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.decimal_to_base_m"><code class="name flex">
+<span>def <span class="ident">decimal_to_base_m</span></span>(<span>v, m)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A function that converts a decimal number to arbitary base number </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>v</code></strong> :&ensp;<code>int</code></dt>
+<dd>The integer in decimal to convert</dd>
+<dt><strong><code>m</code></strong> :&ensp;<code>int</code></dt>
+<dd>The base of the number system to which we are converting</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>result</code></strong> :&ensp;<code>list</code> of <code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.deinterleave"><code class="name flex">
+<span>def <span class="ident">deinterleave</span></span>(<span>num, m)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Given a number <code>num</code>, returns the number, deinterleaved, into m folds
+Eg: if <code>m</code> were 2, we would be returning the odd and even bits of the number</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>num</code></strong> :&ensp;<code>list</code> of <code>ints</code></dt>
+<dd>The number being deinterleaved</dd>
+<dt><strong><code>m</code></strong> :&ensp;<code>int</code></dt>
+<dd>An integer denoting the number of folds into which we deinterleave <code>num</code></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>m_elements</code></strong> :&ensp;<code>list</code> of <code>integers</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.mempower"><code class="name flex">
+<span>def <span class="ident">mempower</span></span>(<span>a, b)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Same as pow, but able to handle extremely large values, and memoized.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>a</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>b</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>result</code></strong> :&ensp;<code>mpmath.ctx_mp_python.mpf</code> (<code>int</code>)</dt>
+<dd><code>a ** b</code></dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.print_grid"><code class="name flex">
+<span>def <span class="ident">print_grid</span></span>(<span>list_iter_0, list_iter_1, funchandle)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Function used for debugging purposes during development.</p></section>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyGOURGS.Enumerator"><code class="flex name class">
+<span>class <span class="ident">Enumerator</span></span>
+<span>(</span><span>pset)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<h3>Methods</h3>
+<dl>
+<dt id="pyGOURGS.Enumerator.assign_variables_from_pset"><code class="name flex">
+<span>def <span class="ident">assign_variables_from_pset</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Helper function used when initiating an Enumerator instance.</p></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_G_i_b"><code class="name flex">
+<span>def <span class="ident">calculate_G_i_b</span></span>(<span>self, i, b)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of possible configurations of operators of arity
+<code>b</code> in the <code>i</code>th tree.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+<dt><strong><code>b</code></strong> :&ensp;<code>int</code></dt>
+<dd>Maps via <code>arities[b]</code> to the arity of operators being considered</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>G_i_b</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of possible configurations of operators of arity</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_Q"><code class="name flex">
+<span>def <span class="ident">calculate_Q</span></span>(<span>self, N)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of total number of solutions in the solution space</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>N</code></strong> :&ensp;<code>int</code></dt>
+<dd>User specified maximum complexity index</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>Q</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of possible solutions in the solution space</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_R_i"><code class="name flex">
+<span>def <span class="ident">calculate_R_i</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of possible configurations of operators in the
+<code>i</code>th tree.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>R_i</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of possible configurations of operators in the <code>i</code>th
+tree</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_S_i"><code class="name flex">
+<span>def <span class="ident">calculate_S_i</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of possible configurations of terminals in the
+<code>i</code>th tree.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>S_i</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of possible configurations of terminals in the <code>i</code>th
+tree</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_a_i"><code class="name flex">
+<span>def <span class="ident">calculate_a_i</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of terminals in the <code>i</code>th tree</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>a_i</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of terminals in the <code>i</code>th tree</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.calculate_l_i_b"><code class="name flex">
+<span>def <span class="ident">calculate_l_i_b</span></span>(<span>self, i, b)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Calculates the number of nonterminal nodes, with arity <code>arities[b]</code> in
+tree <code>i</code>, called l_i_b</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+<dt><strong><code>b</code></strong> :&ensp;<code>int</code></dt>
+<dd>Maps via arities[<code>b</code>] to the arity of operators being considered</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>l_i_b</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.Enumerator.ith_n_ary_tree"><code class="name flex">
+<span>def <span class="ident">ith_n_ary_tree</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generates the <code>i</code>th n-ary tree.</p>
+<p>Maps from <code>i</code> to the <code>i</code>th n-ary tree using an enumeration of possible
+trees based on the arity of the operators in <code>pset</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
+<dd>A non-negative integer which will be used to map to a unique n-ary
+trees</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>tree</code></strong> :&ensp;<code>string</code></dt>
+<dd>The n-ary tree as a string where <code>.</code> denotes terminal, and [ ]
+define an operator.</dd>
+</dl></section>
+</dd>
+</dl>
+</dd>
+<dt id="pyGOURGS.PrimitiveSet"><code class="flex name class">
+<span>class <span class="ident">PrimitiveSet</span></span>
+</code></dt>
+<dd>
+<section class="desc"><p>A class used to store the terminals and operators used in this global
+optimization problem.
+</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>self</code></dt>
+<dd>A pyGOURGS.PrimitiveSet object</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code>&gt;&gt;&gt;&gt; import pyGOURGS
+&gt;&gt;&gt;&gt; from operator import add, sub, truediv, mul
+&gt;&gt;&gt;&gt; pset.add_operator(add, 2)
+&gt;&gt;&gt;&gt; pset.add_operator(sub, 2)
+&gt;&gt;&gt;&gt; pset.add_operator(truediv, 2)
+&gt;&gt;&gt;&gt; pset.add_variable(1)
+&gt;&gt;&gt;&gt; pset.add_variable(0)
+</code></pre></section>
+<h3>Methods</h3>
+<dl>
+<dt id="pyGOURGS.PrimitiveSet.add_fitting_parameter"><code class="name flex">
+<span>def <span class="ident">add_fitting_parameter</span></span>(<span>self, param_name)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A method that adds a fitting parameter to the list of terminals
+stored in self._fitting_parameters.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>param_name</code></strong> :&ensp;<code>string</code></dt>
+<dd>The name of the fitting parameter which acts as a terminal</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.PrimitiveSet.add_operator"><code class="name flex">
+<span>def <span class="ident">add_operator</span></span>(<span>self, func_handle, arity)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A method that adds a user-specified operator to the list of operators
+stored in self._operators.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>func_handle</code></strong> :&ensp;<code>function</code> or <code>builtin_function_or_method</code></dt>
+<dd>The name of a function which will be used in the list of operators.</dd>
+<dt><strong><code>arity</code></strong> :&ensp;<code>integer</code></dt>
+<dd>The number of inputs of the function <code>func_handle</code></dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.PrimitiveSet.add_variable"><code class="name flex">
+<span>def <span class="ident">add_variable</span></span>(<span>self, variable)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A method that adds a user-specified variable to the list of terminals
+stored in self._variables.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>variable</code></strong></dt>
+<dd>The variable or value which will be used as a terminal. Its type
+can be anything, but the operators will need to be able to take
+<code>variable</code> as an input.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.PrimitiveSet.get_arities"><code class="name flex">
+<span>def <span class="ident">get_arities</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A method that returns the arities permissible in this search.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>None</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>arities</code></strong> :&ensp;<code>a</code> <code>sorted</code> <code>list</code> of <code>integers</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+<dt id="pyGOURGS.PrimitiveSet.get_terminals"><code class="name flex">
+<span>def <span class="ident">get_terminals</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A method that returns the fitting parameters and variables as one list.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>None</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>terminals</code></strong> :&ensp;<code>list</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="pyGOURGS Home" href="https://pyGOURGS.github.io">
+<img src="https://github.com/pySRURGS/pyGOURGS/blob/master/image/pyGOURGS.svg" alt=""> pyGOURGS
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyGOURGS.base_m_to_decimal" href="#pyGOURGS.base_m_to_decimal">base_m_to_decimal</a></code></li>
+<li><code><a title="pyGOURGS.decimal_to_base_m" href="#pyGOURGS.decimal_to_base_m">decimal_to_base_m</a></code></li>
+<li><code><a title="pyGOURGS.deinterleave" href="#pyGOURGS.deinterleave">deinterleave</a></code></li>
+<li><code><a title="pyGOURGS.mempower" href="#pyGOURGS.mempower">mempower</a></code></li>
+<li><code><a title="pyGOURGS.print_grid" href="#pyGOURGS.print_grid">print_grid</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyGOURGS.Enumerator" href="#pyGOURGS.Enumerator">Enumerator</a></code></h4>
+<ul class="">
+<li><code><a title="pyGOURGS.Enumerator.assign_variables_from_pset" href="#pyGOURGS.Enumerator.assign_variables_from_pset">assign_variables_from_pset</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_G_i_b" href="#pyGOURGS.Enumerator.calculate_G_i_b">calculate_G_i_b</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_Q" href="#pyGOURGS.Enumerator.calculate_Q">calculate_Q</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_R_i" href="#pyGOURGS.Enumerator.calculate_R_i">calculate_R_i</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_S_i" href="#pyGOURGS.Enumerator.calculate_S_i">calculate_S_i</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_a_i" href="#pyGOURGS.Enumerator.calculate_a_i">calculate_a_i</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.calculate_l_i_b" href="#pyGOURGS.Enumerator.calculate_l_i_b">calculate_l_i_b</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.ith_n_ary_tree" href="#pyGOURGS.Enumerator.ith_n_ary_tree">ith_n_ary_tree</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyGOURGS.PrimitiveSet" href="#pyGOURGS.PrimitiveSet">PrimitiveSet</a></code></h4>
+<ul class="">
+<li><code><a title="pyGOURGS.PrimitiveSet.add_fitting_parameter" href="#pyGOURGS.PrimitiveSet.add_fitting_parameter">add_fitting_parameter</a></code></li>
+<li><code><a title="pyGOURGS.PrimitiveSet.add_operator" href="#pyGOURGS.PrimitiveSet.add_operator">add_operator</a></code></li>
+<li><code><a title="pyGOURGS.PrimitiveSet.add_variable" href="#pyGOURGS.PrimitiveSet.add_variable">add_variable</a></code></li>
+<li><code><a title="pyGOURGS.PrimitiveSet.get_arities" href="#pyGOURGS.PrimitiveSet.get_arities">get_arities</a></code></li>
+<li><code><a title="pyGOURGS.PrimitiveSet.get_terminals" href="#pyGOURGS.PrimitiveSet.get_terminals">get_terminals</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
