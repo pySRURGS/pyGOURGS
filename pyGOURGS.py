@@ -323,8 +323,8 @@ class Enumerator(object):
 
     def calculate_l_i_b(self, i, b):
         """
-        Calculates the number of operators, with arity `b` in tree `i`, called 
-        l_i_b
+        Calculates the number of nonterminal nodes, with arity `arities[b]` in 
+        tree `i`, called l_i_b
 
         Parameters
         ----------
@@ -339,9 +339,8 @@ class Enumerator(object):
         -------
         l_i_b: int            
         """
-        pset = self._pset
-        k = len(self._pset._operators.keys())
-        arities = pset.get_arities()
+        arities = self._pset.get_arities()
+        k = len(arities)
         if i == 0:
             l_i_b = 0
         elif i in range(1, k+1):
@@ -351,8 +350,10 @@ class Enumerator(object):
                 l_i_b = 0
         else:        
             l_i_b = 0
-            j = (i - 1) % k
+            e, j = divmod(i-1, k) 
             m = arities[j]
+            if m == arities[b]:
+                l_i_b = l_i_b + 1
             e_base_arity = decimal_to_base_m(e, m)
             list_bits = deinterleave(e_base_arity, m)
             list_bits_deci = [base_m_to_decimal(u, m) \
@@ -380,7 +381,7 @@ class Enumerator(object):
         G_i_b : int
             the number of possible configurations of operators of arity
         """
-        arities = self._arities
+        arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
         G_i_b = mempower(f_b, l_i_b)
@@ -404,14 +405,17 @@ class Enumerator(object):
             tree
         """
         if i == 0:
-            return 0
-        k = len(self._pset._operators.keys())
+            return 1
+        arities = self._pset.get_arities()
+        k = len(arities)
         R_i = mpmath.mpf(1.0)
         for b in range(0, k):
-            R_i = R_i * self.calculate_G_i_b(i, b)
+            G_i_b = self.calculate_G_i_b(i, b)
+            if G_i_b != 0:
+                R_i = R_i * G_i_b
         return R_i
 
-    def calculate_j_i(self, i):
+    def calculate_a_i(self, i):
         """
         Calculates the number of terminals in the `i`th tree
 
@@ -423,28 +427,26 @@ class Enumerator(object):
 
         Returns
         -------
-        j_i: int
+        a_i: int
             The number of terminals in the `i`th tree 
         """
-        k = len(self._pset._operators.keys())
         arities = self._pset.get_arities()
-        j_i = 0
+        k = len(arities)
+        a_i = 0
         if i == 0:
-            return 1
-        else:        
-            if i-1 in range(0,k):
-                j_i = arities[i-1]
-                return j_i
-            else:
-                j = (i - 1) % (len(arities))
-                n_children = arities[j]
-                i_as_bits = np.base_repr(i-j-k, k)
-                deinterleaved_i = deinterleave_num_into_k_elements(i_as_bits,
-                                                                   n_children)
-                deinterleaved_i_deci = [int(x, k) for x in deinterleaved_i]
-                for i_deinterleaved in deinterleaved_i_deci:
-                    j_i = j_i + self.calculate_j_i(i_deinterleaved)                
-        return j_i
+            a_i = 1
+        elif i in range(1, k+1):
+            a_i = arities[i-1]
+        else:
+            e, j = divmod(i-1, k) 
+            m = arities[j]
+            e_base_arity = decimal_to_base_m(e, m)
+            list_bits = deinterleave(e_base_arity, m)
+            list_bits_deci = [base_m_to_decimal(u, m) \
+                                 for u in list_bits]
+            for i_deinterleaved in deinterleaved_i_deci:
+                a_i = a_i + self.calculate_a_i(i_deinterleaved)                
+        return a_i
         
 
     def calculate_S_i(self, i):
@@ -465,7 +467,7 @@ class Enumerator(object):
             tree
         """
         m = len(self._pset.get_terminals())
-        j_i = self.calculate_j_i(i)
+        j_i = self.calculate_a_i(i)
         S_i = mempower(m, j_i)
         return S_i
 

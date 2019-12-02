@@ -39,15 +39,18 @@ class TestSymbolicRegression(unittest.TestCase):
         self.pset.add_operator(add, 2)
         self.pset.add_operator(sub, 1)
         self.pset.add_operator(truediv, 3)
+        self.pset.add_operator(mul, 1)
         self.pset.add_variable(1)
+        self.pset.add_variable(0)
         self.enum = pyGOURGS.Enumerator(self.pset)
 
     def test_count_unique_trees(self):
         trees = list()
-        N_trees = 200
+        N_trees = 20
         for i in range(0,N_trees):
             tree = self.enum.ith_n_ary_tree(i)
             trees.append(tree)
+            print(tree)
         self.assertEqual(len(list(set(trees))), N_trees)
 
     def test_terminal(self):
@@ -71,12 +74,20 @@ class TestSymbolicRegression(unittest.TestCase):
     def test_count_operators_0(self):
         self.assertEqual(self.enum.calculate_l_i_b(2, 1), 1)
         self.assertEqual(self.enum.calculate_l_i_b(2, 0), 0)
+        self.assertEqual(self.enum.calculate_l_i_b(1, 0), 1)
+        self.assertEqual(self.enum.calculate_l_i_b(4, 0), 2)
+
+    def test_count_total_configurations_operators_0(self):
+        self.assertEqual(self.enum.calculate_G_i_b(4,0), 4)
+        self.assertEqual(self.enum.calculate_G_i_b(11,0), 4)
 
     def test_count_total_configurations_0(self):
-        self.assertEqual(self.enum.calculate_R_i(0),0)
-        self.assertEqual(self.enum.calculate_R_i(1),1)
+        self.assertEqual(self.enum.calculate_R_i(0),1)
+        self.assertEqual(self.enum.calculate_R_i(1),2)
         self.assertEqual(self.enum.calculate_R_i(2),1)
-        
+        self.assertEqual(self.enum.calculate_R_i(3),1)
+        self.assertEqual(self.enum.calculate_R_i(11),4)
+
 
 if __name__ == '__main__':
     unittest.main()
