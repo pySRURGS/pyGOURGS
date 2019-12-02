@@ -81,13 +81,28 @@ class TestSymbolicRegression(unittest.TestCase):
         self.assertEqual(self.enum.calculate_G_i_b(4,0), 4)
         self.assertEqual(self.enum.calculate_G_i_b(11,0), 4)
 
-    def test_count_total_configurations_0(self):
+    def test_count_total_configurations_all_arities_0(self):
         self.assertEqual(self.enum.calculate_R_i(0),1)
         self.assertEqual(self.enum.calculate_R_i(1),2)
         self.assertEqual(self.enum.calculate_R_i(2),1)
         self.assertEqual(self.enum.calculate_R_i(3),1)
         self.assertEqual(self.enum.calculate_R_i(11),4)
 
+    def test_count_total_configurations_terminals_0(self):
+        self.assertEqual(self.enum.calculate_a_i(0),1)
+        self.assertEqual(self.enum.calculate_a_i(1),1)
+        self.assertEqual(self.enum.calculate_a_i(2),2)
+        self.assertEqual(self.enum.calculate_a_i(3),3)
+        self.assertEqual(self.enum.calculate_a_i(4),1)
+        self.assertEqual(self.enum.calculate_a_i(5),2)
+        
+    def test_count_total_configurations_terminals_0(self):
+        self.assertEqual(self.enum.calculate_S_i(0),2)
+        self.assertEqual(self.enum.calculate_S_i(1),2)
+        self.assertEqual(self.enum.calculate_S_i(2),4)
+        self.assertEqual(self.enum.calculate_S_i(3),8)
+        self.assertEqual(self.enum.calculate_S_i(4),2)
+        self.assertEqual(self.enum.calculate_S_i(5),4)
 
 if __name__ == '__main__':
     unittest.main()

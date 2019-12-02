@@ -444,7 +444,7 @@ class Enumerator(object):
             list_bits = deinterleave(e_base_arity, m)
             list_bits_deci = [base_m_to_decimal(u, m) \
                                  for u in list_bits]
-            for i_deinterleaved in deinterleaved_i_deci:
+            for i_deinterleaved in list_bits_deci:
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
