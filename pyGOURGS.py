@@ -571,6 +571,7 @@ class Enumerator(object):
         solution: int
             The candidate solution generated from the supplied indices
         """       
+        pset = self._pset
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r >= R_i or r < 0:
@@ -586,8 +587,12 @@ class Enumerator(object):
         # the integer value s needs to map to a set of terminals to be used 
         #operator_config = 
         #terminal_config = 
+        a_i = self.calculate_a_i(i)
+        terminal_config = get_element_of_cartesian_product(pset.get_terminals(),
+                                                           repeat=a_i, index=s)
 
 if __name__ == '__main__':
+    from operator import add, sub, mul, truediv
     pset = PrimitiveSet()
     pset.add_operator(add, 2)
     pset.add_operator(sub, 2)
