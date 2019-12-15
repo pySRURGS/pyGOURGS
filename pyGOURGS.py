@@ -380,7 +380,7 @@ class Enumerator(object):
             trees
 
         b: int 
-            Maps via arities[`b`] to the arity of operators being considered
+            Maps via `arities`[b] to the arity of operators being considered
 
         Returns
         -------
@@ -426,13 +426,38 @@ class Enumerator(object):
         Returns
         -------
         G_i_b : int
-            the number of possible configurations of operators of arity
+            the number of possible configurations of operators of arity `arities`[b]
         """
         arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
+
+    def calculate_all_G_i_b(self, i):
+        """
+        Calculates the number of possible configurations of operators of arity 
+        `b` in the `i`th tree for all values of `b`
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
+
+        Returns
+        -------
+        list_G_i: list
+            A list containing the number of possible configurations of operators 
+            of arity `arities`[b] 
+        """
+        arities = self._pset.get_arities()
+        k = len(arities)
+        R_i = mpmath.mpf(1.0)
+        list_G_i_b = list()
+        for b in range(0, k):
+            list_G_i_b.append(self.calculate_G_i_b(i, b))
+        return list_G_i_b
 
     def calculate_R_i(self, i):
         """
@@ -453,11 +478,9 @@ class Enumerator(object):
         """
         if i == 0:
             return 1
-        arities = self._pset.get_arities()
-        k = len(arities)
         R_i = mpmath.mpf(1.0)
-        for b in range(0, k):
-            G_i_b = self.calculate_G_i_b(i, b)
+        all_G_i_b = self.calculate_all_G_i_b(i)
+        for G_i_b in all_G_i_b:            
             if G_i_b != 0:
                 R_i = R_i * G_i_b
         return R_i
@@ -587,6 +610,16 @@ class Enumerator(object):
         # the integer value s needs to map to a set of terminals to be used 
         #operator_config = 
         #terminal_config = 
+        #nonzero_G_i_b_values = [x for x in self.calculate_all_G_i_b(i) if x not 0]
+        G_i_b_values = self.calculate_all_G_i_b(i)
+        operator_config_indices = np.unravel_index(r, G_i_b_values)
+        operator_config = []
+        for b in range(0,len(operator_config_indices)):
+            z = operator_config_indices[b]
+            l_i_b = self.calculate_l_i_b(i, b)
+            config = get_element_of_cartesian_product(pset.get_operators()[arities[b]],
+                                                           repeat=l_i_b, index=z)
+            operator_config.append(config)
         a_i = self.calculate_a_i(i)
         terminal_config = get_element_of_cartesian_product(pset.get_terminals(),
                                                            repeat=a_i, index=s)
