@@ -622,7 +622,7 @@ class Enumerator(object):
         weights = weights / np.sum(weights)
         return Q, weights
 
-    def generate_potential_solution(self, i, r, s, N):        
+    def generate_specified_solution(self, i, r, s, N):        
         """
         Generates a candidate solution given all the indices that map to the
         solution space
@@ -711,5 +711,5 @@ if __name__ == '__main__':
     enum = Enumerator(pset)
     i_list = range(0,10)
     b_list = range(0,10)    
-    enum.generate_potential_solution(10, 80, 10, 10)
+    enum.generate_specified_solution(10, 80, 10, 10)
     
