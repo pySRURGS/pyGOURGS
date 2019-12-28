@@ -400,7 +400,7 @@ class Enumerator(object):
             trees
 
         b: int 
-            Maps via arities[`b`] to the arity of operators being considered
+            Maps via `arities`[b] to the arity of operators being considered
 
         Returns
         -------
@@ -446,13 +446,38 @@ class Enumerator(object):
         Returns
         -------
         G_i_b : int
-            the number of possible configurations of operators of arity
+            the number of possible configurations of operators of arity `arities`[b]
         """
         arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
         l_i_b = self.calculate_l_i_b(i, b)
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
+
+    def calculate_all_G_i_b(self, i):
+        """
+        Calculates the number of possible configurations of operators of arity 
+        `b` in the `i`th tree for all values of `b`
+
+        Parameters
+        ----------
+        i: int
+            A non-negative integer which will be used to map to a unique n-ary 
+            trees
+
+        Returns
+        -------
+        list_G_i: list
+            A list containing the number of possible configurations of operators 
+            of arity `arities`[b] 
+        """
+        arities = self._pset.get_arities()
+        k = len(arities)
+        R_i = mpmath.mpf(1.0)
+        list_G_i_b = list()
+        for b in range(0, k):
+            list_G_i_b.append(self.calculate_G_i_b(i, b))
+        return list_G_i_b
 
     def calculate_R_i(self, i):
         """
@@ -473,11 +498,9 @@ class Enumerator(object):
         """
         if i == 0:
             return 1
-        arities = self._pset.get_arities()
-        k = len(arities)
         R_i = mpmath.mpf(1.0)
-        for b in range(0, k):
-            G_i_b = self.calculate_G_i_b(i, b)
+        all_G_i_b = self.calculate_all_G_i_b(i)
+        for G_i_b in all_G_i_b:            
             if G_i_b != 0:
                 R_i = R_i * G_i_b
         return R_i
@@ -592,6 +615,8 @@ class Enumerator(object):
             The candidate solution generated from the supplied indices
         """
         terminals = self._pset.get_terminals()
+    
+        pset = self._pset
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r >= R_i or r < 0:
@@ -601,29 +626,34 @@ class Enumerator(object):
         if i > N:
             raise Exception("Invalid value of i w.r.t. N")
         tree = self.ith_n_ary_tree(i)
-        # the integer value r needs to map to a set of operators
-        # that are to be used 
-        operators = self._pset.get_operators()
-        operators_config = get_element_of_cartesian_product(operators,
-                                                            index=r)
-        # the integer value s needs to map to a set of terminals to be used 
-        #operator_config = 
+        G_i_b_values = self.calculate_all_G_i_b(i)
+        G_i_b_values = [int(x) for x in G_i_b_values]
+        operator_config_indices = np.unravel_index(r, G_i_b_values)
+        operator_config = []
+        for b in range(0,len(operator_config_indices)):
+            z = operator_config_indices[b]
+            arities = self._pset.get_arities()
+            arity = arities[b]
+            l_i_b = self.calculate_l_i_b(i, b)
+            config = get_element_of_cartesian_product(pset._operators[arity],
+                                                           repeat=l_i_b, index=z)
+            operator_config.append(config)
         a_i = self.calculate_a_i(i)
-        terminals_config = get_element_of_cartesian_product(terminals, 
-                                                            repeat=a_i, 
-                                                            index=s)
-        for z in range(0, len(terminals_config)):
-            term = terminals_config[z]
-            tree = tree.replace('.', term, 1)
+        terminal_config = get_element_of_cartesian_product(pset.get_terminals(),
+                                                           repeat=a_i, index=s)
+        
+        pdb.set_trace()
 
 if __name__ == '__main__':
+    from operator import add, sub, mul, truediv
     pset = PrimitiveSet()
     pset.add_operator(add, 2)
     pset.add_operator(sub, 2)
     pset.add_operator(truediv, 2)
     pset.add_variable(1)
+    pset.add_variable(0)
     enum = Enumerator(pset)
     i_list = range(0,10)
-    b_list = range(0,10)
-    print_grid(i_list, b_list, enum.calculate_G_i_b)
+    b_list = range(0,10)    
+    enum.generate_potential_solution(10, 80, 10, 10)
     
