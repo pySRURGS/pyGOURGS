@@ -200,6 +200,26 @@ class PrimitiveSet(object):
         arities : a sorted list of integers
         """
         return sorted(self._operators.keys())
+    
+    def get_operators(self):
+        """
+        A method that returns the operators permissible in this search.
+
+        Parameters
+        ----------
+        None
+            
+        Returns
+        -------
+        operators : list of lists, with elements sorted according to increasing 
+            arity
+        """
+        operators = []
+        keys = self._operators.keys()
+        sorted_keys = sorted(keys)
+        for i in sorted_keys:
+            operators.append(self._operators[i])
+        return operators
 
 def decimal_to_base_m(v, m):
     """
@@ -570,7 +590,8 @@ class Enumerator(object):
         -------
         solution: int
             The candidate solution generated from the supplied indices
-        """       
+        """
+        terminals = self._pset.get_terminals()
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r >= R_i or r < 0:
@@ -580,12 +601,20 @@ class Enumerator(object):
         if i > N:
             raise Exception("Invalid value of i w.r.t. N")
         tree = self.ith_n_ary_tree(i)
-        # for each arity, the integer value r needs to map to a set of operator
+        # the integer value r needs to map to a set of operators
         # that are to be used 
-        #
+        operators = self._pset.get_operators()
+        operators_config = get_element_of_cartesian_product(operators,
+                                                            index=r)
         # the integer value s needs to map to a set of terminals to be used 
         #operator_config = 
-        #terminal_config = 
+        a_i = self.calculate_a_i(i)
+        terminals_config = get_element_of_cartesian_product(terminals, 
+                                                            repeat=a_i, 
+                                                            index=s)
+        for z in range(0, len(terminals_config)):
+            term = terminals_config[z]
+            tree = tree.replace('.', term, 1)
 
 if __name__ == '__main__':
     pset = PrimitiveSet()
