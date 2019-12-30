@@ -1,22 +1,12 @@
 ![Binoculars](image/pyGOURGS.svg)
 
-## IN ACTIVE DEVELOPMENT
-
 ## Global Optimization by Uniform Random Global Search
 
 ## Features 
 
-1. Robust parameter fitting
-2. Multiprocessing for speed
-3. Memoization for speed
-4. Loads data from CSV files
-5. Results saved to SQLite file. 
-6. Results of new runs are added to results of old runs.
-7. User specified number of fitting parameters.
-8. User specified operator functions of arbitrary arity
-9. Can also run an exhaustive/brute-force search
-10. Can be run in deterministic mode for reproducibility
-11. Developed and tested on Python 3.6
+1. Can also run an exhaustive/brute-force search
+2. Can be run in deterministic mode for reproducibility
+3. Developed and tested on Python 3.6
 
 ## Getting Started
 
@@ -26,16 +16,13 @@ It's a python3 script. Download it and run it via a terminal.
 
 You can install the prerequisite packages with pip
 
-```deap mpmath lmfit sympy pandas numpy parmap tqdm sqlitedict tabulate matplotlib scipy python-coveralls pytest pytest-cov```
 
 ### Installing
 
 Clone the repo then install the prerequisites.
 
 ```
-git clone https://github.com/pySRURGS/pyGOURGS.git
-cd pyGOURGS
-pip install -r requirements.txt --user
+pip install pyGOURGS
 ```
 
 ### Command line help
