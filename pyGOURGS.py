@@ -698,7 +698,30 @@ class Enumerator(object):
             working_tree = working_tree.replace('.', terminal, 1)        
         tree = working_tree 
         return tree
-        
+
+    def uniform_random_global_search_once(self, N):
+        """
+        Generates a random candidate solution in the solution space
+
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+            
+        Returns
+        -------
+        solution: int
+            The candidate solution generated from the supplied indices
+        """
+        terminals = self._pset.get_terminals()
+    
+        pset = self._pset
+        R_i = self.calculate_R_i(i)
+        S_i = self.calculate_S_i(i)
+        i = np.random.randint()
+        candidate_solution = self.generate_specified_solution(i, r, s, N)
+
 
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
