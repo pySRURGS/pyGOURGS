@@ -1,2 +1,2 @@
-pdoc --html pyGOURGS.py --template-dir ./pdoc_template/  --force
+pdoc --html ./pyGOURGS/pyGOURGS.py --template-dir ./pdoc_template/  --force
 cp ./html/pyGOURGS.html ./index.html
