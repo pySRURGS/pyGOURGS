@@ -2,6 +2,17 @@
 
 ## Global Optimization by Uniform Random Global Search
 
+This software package solves problems whose solutions can be represented as 
+n-ary trees. These problems are typically solved using genetic programming. 
+For these problems, there is often little to no relationship between the data
+structure representation of a candidate solution and the ultimate performance of 
+the candidate solution, once the data structure representation has been 
+evaluated to its human readable form. This makes pure random search an 
+attractive algorithm with which to solve these kinds of problems. This software 
+is aimed at engineers, researchers and data scientists working in data analysis 
+and computational optimization.
+
+
 ## Features 
 
 1. Can also run an exhaustive/brute-force search
