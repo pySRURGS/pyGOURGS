@@ -42,6 +42,7 @@ https://github.com/pySRURGS/pyGOURGS
 
 import mpmath
 import numpy as np
+import random
 import pdb
 
 def print_grid(list_iter_0, list_iter_1, funchandle):
@@ -732,6 +733,61 @@ class Enumerator(object):
             working_tree = working_tree.replace(&#39;.&#39;, terminal, 1)        
         tree = working_tree 
         return tree
+
+    def uniform_random_global_search_once(self, N):
+        &#34;&#34;&#34;
+        Generates a random candidate solution
+
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+            
+        Returns
+        -------
+        candidate_solution: string
+            The candidate solution generated from the randomly generated indices
+        &#34;&#34;&#34;
+        terminals = self._pset.get_terminals()        
+        pset = self._pset    
+        _, cum_weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+        R_i = self.calculate_R_i(i)
+        S_i = self.calculate_S_i(i)
+        r = random.randint(0, R_i-1)
+        s = random.randint(0, S_i-1)
+        candidate_solution = self.generate_specified_solution(i, r, s, N)
+        return candidate_solution
+        
+    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+        &#34;&#34;&#34;
+        Yields (this is a generator) a random candidate solutions `num_soln` 
+        times.
+
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+
+        num_soln: int
+            The number of solutions to generate
+        
+        deterministic: bool
+            Boolean which specifies whether to run in deterministic mode or not. 
+            If not True, random.seed() will not be set, and so will result in
+            random behaviour.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        &#34;&#34;&#34;
+        if deterministic == True:
+            random.seed(0)
+        for j in range(0, num_soln):
+            yield self.uniform_random_global_search_once(N)
         
 
 if __name__ == &#39;__main__&#39;:
@@ -746,6 +802,8 @@ if __name__ == &#39;__main__&#39;:
     i_list = range(0,10)
     b_list = range(0,10)    
     enum.generate_specified_solution(10, 80, 10, 10)
+    sol = enum.uniform_random_global_search_once(10)
+    print(sol)
     </code></pre>
 </details>
 </section>
@@ -1471,7 +1529,62 @@ to take the cartesian product with itself.</dd>
             terminal = str(terminal_config.pop())
             working_tree = working_tree.replace(&#39;.&#39;, terminal, 1)        
         tree = working_tree 
-        return tree</code></pre>
+        return tree
+
+    def uniform_random_global_search_once(self, N):
+        &#34;&#34;&#34;
+        Generates a random candidate solution
+
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+            
+        Returns
+        -------
+        candidate_solution: string
+            The candidate solution generated from the randomly generated indices
+        &#34;&#34;&#34;
+        terminals = self._pset.get_terminals()        
+        pset = self._pset    
+        _, cum_weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+        R_i = self.calculate_R_i(i)
+        S_i = self.calculate_S_i(i)
+        r = random.randint(0, R_i-1)
+        s = random.randint(0, S_i-1)
+        candidate_solution = self.generate_specified_solution(i, r, s, N)
+        return candidate_solution
+        
+    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+        &#34;&#34;&#34;
+        Yields (this is a generator) a random candidate solutions `num_soln` 
+        times.
+
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+
+        num_soln: int
+            The number of solutions to generate
+        
+        deterministic: bool
+            Boolean which specifies whether to run in deterministic mode or not. 
+            If not True, random.seed() will not be set, and so will result in
+            random behaviour.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        &#34;&#34;&#34;
+        if deterministic == True:
+            random.seed(0)
+        for j in range(0, num_soln):
+            yield self.uniform_random_global_search_once(N)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -2020,6 +2133,108 @@ define an operator.</dd>
     return tree</code></pre>
 </details>
 </dd>
+<dt id="pyGOURGS.Enumerator.uniform_random_global_search"><code class="name flex">
+<span>def <span class="ident">uniform_random_global_search</span></span>(<span>self, N, num_soln, deterministic=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Yields (this is a generator) a random candidate solutions <code>num_soln</code>
+times.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>N</code></strong> :&ensp;<code>int</code></dt>
+<dd>User specified maximum complexity index</dd>
+<dt><strong><code>num_soln</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of solutions to generate</dd>
+<dt><strong><code>deterministic</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Boolean which specifies whether to run in deterministic mode or not.
+If not True, random.seed() will not be set, and so will result in
+random behaviour.</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><strong><code>candidate_solution</code></strong> :&ensp;<code>string</code></dt>
+<dd>The candidate solution generated</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def uniform_random_global_search(self, N, num_soln, deterministic=True):
+    &#34;&#34;&#34;
+    Yields (this is a generator) a random candidate solutions `num_soln` 
+    times.
+
+    Parameters
+    ----------
+
+    N: int 
+        User specified maximum complexity index
+
+    num_soln: int
+        The number of solutions to generate
+    
+    deterministic: bool
+        Boolean which specifies whether to run in deterministic mode or not. 
+        If not True, random.seed() will not be set, and so will result in
+        random behaviour.
+        
+    Yields
+    -------
+    candidate_solution: string
+        The candidate solution generated
+    &#34;&#34;&#34;
+    if deterministic == True:
+        random.seed(0)
+    for j in range(0, num_soln):
+        yield self.uniform_random_global_search_once(N)</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.Enumerator.uniform_random_global_search_once"><code class="name flex">
+<span>def <span class="ident">uniform_random_global_search_once</span></span>(<span>self, N)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generates a random candidate solution</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>N</code></strong> :&ensp;<code>int</code></dt>
+<dd>User specified maximum complexity index</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>candidate_solution</code></strong> :&ensp;<code>string</code></dt>
+<dd>The candidate solution generated from the randomly generated indices</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def uniform_random_global_search_once(self, N):
+    &#34;&#34;&#34;
+    Generates a random candidate solution
+
+    Parameters
+    ----------
+
+    N: int 
+        User specified maximum complexity index
+        
+    Returns
+    -------
+    candidate_solution: string
+        The candidate solution generated from the randomly generated indices
+    &#34;&#34;&#34;
+    terminals = self._pset.get_terminals()        
+    pset = self._pset    
+    _, cum_weights = self.calculate_Q(N)
+    i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+    R_i = self.calculate_R_i(i)
+    S_i = self.calculate_S_i(i)
+    r = random.randint(0, R_i-1)
+    s = random.randint(0, S_i-1)
+    candidate_solution = self.generate_specified_solution(i, r, s, N)
+    return candidate_solution</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="pyGOURGS.PrimitiveSet"><code class="flex name class">
@@ -2464,6 +2679,8 @@ can be anything, but the operators will need to be able to take
 <li><code><a title="pyGOURGS.Enumerator.calculate_l_i_b" href="#pyGOURGS.Enumerator.calculate_l_i_b">calculate_l_i_b</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.generate_specified_solution" href="#pyGOURGS.Enumerator.generate_specified_solution">generate_specified_solution</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.ith_n_ary_tree" href="#pyGOURGS.Enumerator.ith_n_ary_tree">ith_n_ary_tree</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.uniform_random_global_search" href="#pyGOURGS.Enumerator.uniform_random_global_search">uniform_random_global_search</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.uniform_random_global_search_once" href="#pyGOURGS.Enumerator.uniform_random_global_search_once">uniform_random_global_search_once</a></code></li>
 </ul>
 </li>
 <li>
