@@ -8,6 +8,7 @@ https://github.com/pySRURGS/pyGOURGS
 
 import mpmath
 import numpy as np
+import random
 import pdb
 
 def print_grid(list_iter_0, list_iter_1, funchandle):
@@ -701,7 +702,7 @@ class Enumerator(object):
 
     def uniform_random_global_search_once(self, N):
         """
-        Generates a random candidate solution in the solution space
+        Generates a random candidate solution
 
         Parameters
         ----------
@@ -711,17 +712,49 @@ class Enumerator(object):
             
         Returns
         -------
-        solution: int
-            The candidate solution generated from the supplied indices
+        candidate_solution: string
+            The candidate solution generated from the randomly generated indices
         """
-        terminals = self._pset.get_terminals()
-    
-        pset = self._pset
+        terminals = self._pset.get_terminals()        
+        pset = self._pset    
+        _, cum_weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
-        i = np.random.randint()
+        r = random.randint(0, R_i-1)
+        s = random.randint(0, S_i-1)
         candidate_solution = self.generate_specified_solution(i, r, s, N)
+        return candidate_solution
+        
+    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+        """
+        Yields (this is a generator) a random candidate solutions `num_soln` 
+        times.
 
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+
+        num_soln: int
+            The number of solutions to generate
+        
+        deterministic: bool
+            Boolean which specifies whether to run in deterministic mode or not. 
+            If not True, random.seed() will not be set, and so will result in
+            random behaviour.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        """
+        if deterministic == True:
+            random.seed(0)
+        for j in range(0, num_soln):
+            yield self.uniform_random_global_search_once(N)
+        
 
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
@@ -735,4 +768,6 @@ if __name__ == '__main__':
     i_list = range(0,10)
     b_list = range(0,10)    
     enum.generate_specified_solution(10, 80, 10, 10)
+    sol = enum.uniform_random_global_search_once(10)
+    print(sol)
     
