@@ -1,4 +1,4 @@
-import pyGOURGS
+import pyGOURGS.pyGOURGS as pg
 import copy
 import random
 import numpy
@@ -92,7 +92,7 @@ class AntSimulator(object):
         self.matrix_exc = copy.deepcopy(self.matrix)
 
 ant = AntSimulator(400)
-pset = pyGOURGS.PrimitiveSet()
+pset = pg.PrimitiveSet()
 pset.add_operator("ant.if_food_ahead", 2)
 pset.add_operator("prog2", 2)
 pset.add_operator("prog3", 3)
@@ -102,7 +102,7 @@ pset.add_variable("ant.turn_right()")
 
 def evalArtificialAnt(individual):
     # Transform the tree expression to functionnal Python code
-    routine = pyGOURGS.compile(individual, pset)
+    routine = pg.compile(individual, pset)
     # Run the generated routine
     ant.run(routine)
     return ant.eaten,  
