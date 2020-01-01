@@ -48,6 +48,8 @@ This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE.t
 
 ## How to Cite
 
+If you use this software in your research, then please cite our papers.
+
 ## Community
 
 If you would like to contribute to the project or you need help, then please create an issue.
