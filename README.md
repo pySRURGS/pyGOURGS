@@ -19,7 +19,7 @@ and computational optimization.
 3. Can also run an exhaustive/brute-force search
 4. Class instance level memoization of methods for speed
 5. API is similar to that of the popular DEAP genetic programming software
-6. Example script for the Artificial Ant (Santa Fe trail) problem
+6. Example script for the Artificial Ant problem, simple Symbolic Regression, Multiplexer, and Even Parity problems.
 
 ## Getting Started
 
@@ -34,7 +34,9 @@ Install using pip from the terminal.
 pip install pyGOURGS
 ```
 
-### An example
+## API
+
+[Documentation](https://pysrurgs.github.io/pyGOURGS/)
 
 ## Author
 
@@ -47,6 +49,10 @@ This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE.t
 ## How to Cite
 
 ## Community
+
+If you would like to contribute to the project or you need help, then please create an issue.
+
+With regards to community suggested changes, I would comment as to whether it would be within the scope of the project to include the suggested changes. If both parties are in agreement, whomever is interested in developing the changes can make a pull request, or I will implement the suggested changes.
 
 ## Acknowledgments
 
