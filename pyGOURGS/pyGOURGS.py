@@ -6,6 +6,9 @@ Licence: GPL 3.0;
 https://github.com/pySRURGS/pyGOURGS
 '''
 
+from functools import lru_cache
+from methodtools import lru_cache as mt_lru_cache
+import weakref
 import mpmath
 import numpy as np
 import random
@@ -279,6 +282,7 @@ class PrimitiveSet(object):
             operators.append(self._operators[i])
         return operators
 
+@lru_cache(maxsize=128)
 def decimal_to_base_m(v, m):
     """
     A function that converts a decimal number to arbitary base number 
@@ -317,6 +321,7 @@ def decimal_to_base_m(v, m):
         raise Exception("Invalid m")
     return result
 
+@lru_cache(maxsize=128)
 def base_m_to_decimal(v, m):
     """
     A function that converts a base m number to decimal base number 
@@ -397,6 +402,7 @@ class Enumerator(object):
     def __init__(self, pset):
         self._pset = pset
         self.assign_variables_from_pset()
+        self._results_for_calculate_Q = {}
 
     def assign_variables_from_pset(self):
         '''
@@ -406,6 +412,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
+    @mt_lru_cache(maxsize=128)
     def ith_n_ary_tree(self, i):
         """
         Generates the `i`th n-ary tree.
@@ -445,7 +452,8 @@ class Enumerator(object):
             subtrees = [self.ith_n_ary_tree(x) for x in list_bits_deci]
             tree = '[' + ','.join(subtrees) + ']'
         return tree
-
+    
+    @mt_lru_cache(maxsize=128)
     def calculate_l_i_b(self, i, b):
         """
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -487,6 +495,7 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_G_i_b(self, i, b):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -512,6 +521,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_all_G_i_b(self, i):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -537,6 +547,7 @@ class Enumerator(object):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_R_i(self, i):
         """
         Calculates the number of possible configurations of operators in the 
@@ -563,6 +574,7 @@ class Enumerator(object):
                 R_i = R_i * G_i_b
         return R_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_a_i(self, i):
         """
         Calculates the number of terminals in the `i`th tree
@@ -596,7 +608,7 @@ class Enumerator(object):
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-
+    @mt_lru_cache(maxsize=128)
     def calculate_S_i(self, i):
         """
         Calculates the number of possible configurations of terminals in the 
@@ -619,6 +631,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_Q(self, N):
         """
         Calculates the number of total number of solutions in the solution space
@@ -632,7 +645,11 @@ class Enumerator(object):
         -------
         Q: int
             The number of possible solutions in the solution space
-        """        
+        """ 
+        try:
+            (Q, weights) = self._results_for_calculate_Q[N]            
+        except KeyError:
+            pass
         Q = 0
         weights = list()
         for i in range(0, N):
@@ -643,6 +660,7 @@ class Enumerator(object):
             Q = Q + product
         weights = np.array(weights)
         weights = weights / np.sum(weights)
+        self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
     def generate_specified_solution(self, i, r, s, N):        
@@ -672,8 +690,7 @@ class Enumerator(object):
         solution: int
             The candidate solution generated from the supplied indices
         """
-        terminals = self._pset.get_terminals()
-    
+        terminals = self._pset.get_terminals()    
         pset = self._pset
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)

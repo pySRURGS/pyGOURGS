@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyGOURGS",
-    version="0.0.14",
+    version="0.0.16",
     author="Sohrab Towfighi",
     author_email="sohrab.towfighi@mail.utoronto.ca",
     description="Global optimization by uniform random global search",

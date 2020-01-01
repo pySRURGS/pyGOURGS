@@ -92,7 +92,7 @@ class AntSimulator(object):
         self.matrix_col = len(self.matrix[0])
         self.matrix_exc = copy.deepcopy(self.matrix)
 
-ant = AntSimulator(400)
+ant = AntSimulator(600)
 pset = pg.PrimitiveSet()
 pset.add_operator("ant.if_food_ahead", 2)
 pset.add_operator("prog2", 2)
@@ -111,10 +111,16 @@ def evalArtificialAnt(individual):
 
 if __name__ == "__main__":
     with open("./santafe_trail.txt") as trail_file:
-        ant.parse_matrix(trail_file)    
-    for soln in enum.exhaustive_global_search(10000):        
+        ant.parse_matrix(trail_file)
+    max_score = 0
+    iter = 0
+    for soln in enum.uniform_random_global_search(10000, 20000):
+        iter = iter + 1 
         score = evalArtificialAnt(soln)[0]
-        print(score)
+        if score > max_score:
+            max_score = score
+        if iter % 10 == 0:
+            print(score, max_score, iter)
         if score == 89:
             pdb.set_trace()
         
