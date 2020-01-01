@@ -12,25 +12,22 @@ attractive algorithm with which to solve these kinds of problems. This software
 is aimed at engineers, researchers and data scientists working in data analysis 
 and computational optimization.
 
-
 ## Features 
 
 1. Can also run an exhaustive/brute-force search
 2. Can be run in deterministic mode for reproducibility
 3. Developed and tested on Python 3.6
+4. API is similar to that of the popular DEAP genetic programming software
+5. Example scripts for the Artificial Ant (Santa Fe trail) and Symbolic Regression
 
 ## Getting Started
 
-It's a python3 script. Download it and run it via a terminal.
-
-### Prerequisites
-
-You can install the prerequisite packages with pip
+The software is run using python 3.6. It is run using the terminal.
 
 
 ### Installing
 
-Clone the repo then install the prerequisites.
+Install using pip from the terminal.
 
 ```
 pip install pyGOURGS

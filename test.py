@@ -54,16 +54,16 @@ class TestSymbolicRegression(unittest.TestCase):
         self.assertEqual(len(list(set(trees))), N_trees)
 
     def test_terminal(self):
-        self.assertEqual(self.enum.ith_n_ary_tree(0), '.')
+        self.assertEqual(self.enum.ith_n_ary_tree(0), '..')
 
     def test_operator_1(self):
-        self.assertEqual(self.enum.ith_n_ary_tree(1), '[.]')
+        self.assertEqual(self.enum.ith_n_ary_tree(1), '[..]')
 
     def test_operator_2(self):
-        self.assertEqual(self.enum.ith_n_ary_tree(2), '[.,.]')
+        self.assertEqual(self.enum.ith_n_ary_tree(2), '[..,..]')
 
     def test_operator_3(self):
-        self.assertEqual(self.enum.ith_n_ary_tree(3), '[.,.,.]')
+        self.assertEqual(self.enum.ith_n_ary_tree(3), '[..,..,..]')
 
     def test_count_operators_0(self):
         self.assertEqual(self.enum.calculate_l_i_b(0, 0), 0)

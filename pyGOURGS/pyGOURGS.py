@@ -10,6 +10,17 @@ import mpmath
 import numpy as np
 import random
 import pdb
+import sys
+
+def count_nodes_in_tree(tree):
+    '''
+        Given an n-ary tree in string format, counts the number of nodes in the 
+        tree               
+    '''
+    n_terminals = tree.count('..')
+    n_operators = tree.count('(')
+    n_nodes = n_terminals + n_operators
+    return n_nodes
 
 def print_grid(list_iter_0, list_iter_1, funchandle):
     '''
@@ -145,7 +156,7 @@ class PrimitiveSet(object):
         self._variables = list()
         self._fitting_parameters = list()
         self._operators = dict()
-        self._names = list()        
+        self._names = list()
 
     def add_operator(self, func_handle, arity):
         """
@@ -154,7 +165,7 @@ class PrimitiveSet(object):
 
         Parameters
         ----------
-        func_handle : function or builtin_function_or_method
+        func_handle : str
             The name of a function which will be used in the list of operators.
 
         arity : integer
@@ -181,10 +192,12 @@ class PrimitiveSet(object):
 
         Parameters
         ----------
-        variable
+        variable: str
             The variable or value which will be used as a terminal. Its type 
             can be anything, but the operators will need to be able to take 
-            `variable` as an input.
+            `variable` as an input. Within pyGOURGS, it is treated as a string,
+            but will eventually be evaluated to whatever results from 
+            `eval(variable)`.
             
         Returns
         -------
@@ -406,12 +419,12 @@ class Enumerator(object):
         arities = self._pset.get_arities()
         k = len(arities)
         if i == 0:
-            tree = '.'
+            tree = '..'
         elif i in range(1, k+1):
             tree = '['
             m = arities[i-1]
             for i in range(0, m):
-                tree += '.,'
+                tree += '..,'
             tree = tree[:-1] + ']'
         else:
             e, j = divmod(i-1, k)            
@@ -687,16 +700,15 @@ class Enumerator(object):
             start_index = working_tree.index('[')
             arity = get_arity_of_term(start_index, working_tree)            
             index = arities.index(arity)
-            operator = operator_config[index].pop()
-            operator = operator.__name__
+            operator = operator_config[index].pop()            
             working_tree = (working_tree[0:start_index] + operator + 
                             '(' + working_tree[start_index+1:])
         working_tree = working_tree.replace(']',')',num_opers)        
         # swap in the terminals 
-        num_terminals = working_tree.count('.')
+        num_terminals = working_tree.count('..')
         for i in range(0, num_terminals):
             terminal = str(terminal_config.pop())
-            working_tree = working_tree.replace('.', terminal, 1)        
+            working_tree = working_tree.replace('..', terminal, 1)        
         tree = working_tree 
         return tree
 
@@ -755,19 +767,48 @@ class Enumerator(object):
         for j in range(0, num_soln):
             yield self.uniform_random_global_search_once(N)
         
+def compile(expr, pset):
+    """
+    Compiles the `expr` expression
+
+    Parameters
+    ----------
+
+    expr: a string of Python code or any object that when
+             converted into string produced a valid Python code
+             expression.                 
+
+    pset: Primitive set against which the expression is compiled
+        
+    Returns
+    -------
+        a function if the primitive set has 1 or more arguments,
+         or return the results produced by evaluating the tree
+    """    
+    code = str(expr)
+    if len(pset._variables) > 0:
+        args = ",".join(arg for arg in pset._variables)
+        code = "lambda {args}: {code}".format(args=args, code=code)
+    try:
+        return eval(code)
+    except MemoryError:
+        _, _, traceback = sys.exc_info()
+        raise MemoryError("Tree is too long.", traceback)
 
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
     pset = PrimitiveSet()
-    pset.add_operator(add, 2)
-    pset.add_operator(sub, 2)
-    pset.add_operator(truediv, 2)
-    pset.add_variable(1)
-    pset.add_variable(0)
+    pset.add_operator("add", 2)
+    pset.add_operator("sub", 2)
+    pset.add_operator("truediv", 2)
+    pset.add_variable("x")
+    pset.add_variable("y")
     enum = Enumerator(pset)
     i_list = range(0,10)
     b_list = range(0,10)    
     enum.generate_specified_solution(10, 80, 10, 10)
     sol = enum.uniform_random_global_search_once(10)
+    compile(sol, pset)
     print(sol)
+    
     

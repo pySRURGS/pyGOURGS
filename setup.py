@@ -4,15 +4,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyGOURGS", # Replace with your own username
-    version="0.0.1",
+    name="pyGOURGS",
+    version="0.0.13",
     author="Sohrab Towfighi",
     author_email="sohrab.towfighi@mail.utoronto.ca",
     description="Global optimization by uniform random global search",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pySRURGS/pyGOURGS",
-    packages=setuptools.find_packages(),
+    packages=["pyGOURGS"],
+    py_modules=["pyGOURGS"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
