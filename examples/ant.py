@@ -99,10 +99,11 @@ pset.add_operator("prog3", 3)
 pset.add_variable("ant.move_forward()")
 pset.add_variable("ant.turn_left()")
 pset.add_variable("ant.turn_right()")
+enum = pg.Enumerator(pset)
 
 def evalArtificialAnt(individual):
     # Transform the tree expression to functionnal Python code
-    routine = pg.compile(individual, pset)
+    routine = eval('lambda : ' + individual)
     # Run the generated routine
     ant.run(routine)
     return ant.eaten,  
@@ -110,4 +111,7 @@ def evalArtificialAnt(individual):
 if __name__ == "__main__":
     with open("./santafe_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
+    # maximum number of nodes is 18    
+    soln = enum.generate_specified_solution(0, 0, 0, 10)
+    print(evalArtificialAnt(soln))
     
