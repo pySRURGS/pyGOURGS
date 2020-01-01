@@ -1,6 +1,6 @@
 ![Binoculars](image/pyGOURGS.svg)
 
-### Global Optimization by Uniform Random Global Search
+# Global Optimization by Uniform Random Global Search
 
 This software package solves problems whose solutions can be represented as 
 n-ary trees. These problems are typically solved using genetic programming. 
