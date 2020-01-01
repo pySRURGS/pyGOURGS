@@ -1,5 +1,5 @@
-import pyGOURGS
-from pyGOURGS import decimal_to_base_m, base_m_to_decimal
+import pyGOURGS.pyGOURGS as pg
+from pyGOURGS.pyGOURGS import decimal_to_base_m, base_m_to_decimal
 import unittest
 from operator import add, sub, truediv, mul
 
@@ -35,14 +35,14 @@ class TestNumberBaseConversions(unittest.TestCase):
 class TestSymbolicRegression(unittest.TestCase):
 
     def setUp(self):
-        self.pset = pyGOURGS.PrimitiveSet()
+        self.pset = pg.PrimitiveSet()
         self.pset.add_operator(add, 2)
         self.pset.add_operator(sub, 1)
         self.pset.add_operator(truediv, 3)
         self.pset.add_operator(mul, 1)
         self.pset.add_variable(1)
         self.pset.add_variable(0)
-        self.enum = pyGOURGS.Enumerator(self.pset)
+        self.enum = pg.Enumerator(self.pset)
 
     def test_count_unique_trees(self):
         trees = list()

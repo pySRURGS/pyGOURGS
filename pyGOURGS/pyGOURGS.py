@@ -12,6 +12,15 @@ import random
 import pdb
 import sys
 
+class InvalidOperatorIndex(Exception):
+    pass
+
+class InvalidTerminalIndex(Exception):
+    pass
+
+class InvalidTreeIndex(Exception):
+    pass
+
 def count_nodes_in_tree(tree):
     '''
         Given an n-ary tree in string format, counts the number of nodes in the 
@@ -669,11 +678,11 @@ class Enumerator(object):
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r >= R_i or r < 0:
-            raise Exception("Invalid value of r")
+            raise InvalidOperatorIndex()
         if s >= S_i or s < 0:
-            raise Exception("Invalid value of s")
+            raise InvalidTerminalIndex()
         if i > N:
-            raise Exception("Invalid value of i w.r.t. N")
+            raise InvalidTreeIndex()
         # generate the tree 
         tree = self.ith_n_ary_tree(i)
         # generate the operator configuration 
@@ -767,6 +776,41 @@ class Enumerator(object):
         for j in range(0, num_soln):
             yield self.uniform_random_global_search_once(N)
         
+    def exhaustive_global_search(self, N, max_iters=None):
+        """
+        Yields (this is a generator) candidate solutions incrementally 
+        increasing the operator/terminals configurations indices and tree index 
+        iterator
+        
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+        
+        max_iters: int
+            The maximum number of solutions which can be considered. Will 
+            overrule `N` in terms of cutting off the run.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        """        
+        iter = 1
+        for i in range(0, N):
+            R_i = int(self.calculate_R_i(i))
+            S_i = int(self.calculate_S_i(i))
+            for r in range(0, R_i):
+                for s in range(0, S_i):
+                    if max_iters is not None:
+                        iter = iter + 1 
+                        if iter > max_iters:
+                            return
+                    candidate_solution = self.generate_specified_solution(i,
+                                                                    r, s, N)                    
+                    yield candidate_solution
+        
 def compile(expr, pset):
     """
     Compiles the `expr` expression
@@ -810,5 +854,7 @@ if __name__ == '__main__':
     sol = enum.uniform_random_global_search_once(10)
     compile(sol, pset)
     print(sol)
+    for sol in enum.exhaustive_global_search(2):
+        print(sol)
     
     

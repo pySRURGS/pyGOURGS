@@ -1,3 +1,4 @@
+import sys
 import pyGOURGS.pyGOURGS as pg
 import copy
 import random
@@ -110,8 +111,11 @@ def evalArtificialAnt(individual):
 
 if __name__ == "__main__":
     with open("./santafe_trail.txt") as trail_file:
-        ant.parse_matrix(trail_file)
-    # maximum number of nodes is 18    
-    soln = enum.generate_specified_solution(0, 0, 0, 10)
-    print(evalArtificialAnt(soln))
+        ant.parse_matrix(trail_file)    
+    for soln in enum.exhaustive_global_search(10000):        
+        score = evalArtificialAnt(soln)[0]
+        print(score)
+        if score == 89:
+            pdb.set_trace()
+        
     
