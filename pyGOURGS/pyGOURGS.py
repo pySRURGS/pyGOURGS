@@ -282,7 +282,6 @@ class PrimitiveSet(object):
             operators.append(self._operators[i])
         return operators
 
-@lru_cache(maxsize=128)
 def decimal_to_base_m(v, m):
     """
     A function that converts a decimal number to arbitary base number 
@@ -321,7 +320,6 @@ def decimal_to_base_m(v, m):
         raise Exception("Invalid m")
     return result
 
-@lru_cache(maxsize=128)
 def base_m_to_decimal(v, m):
     """
     A function that converts a base m number to decimal base number 
