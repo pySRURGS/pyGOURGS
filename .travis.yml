@@ -4,7 +4,7 @@ python:
 install: # command to install dependencies
   - "pip install -r requirements.txt"
 # command to run tests
-script: pytest --cov=pyGOURGS -s ./test.py
+script: pytest --cov=pyGOURGS/pyGOURGS -s ./test.py
 notifications:
   email:
     - sohrab.towfighi@mail.utoronto.ca
