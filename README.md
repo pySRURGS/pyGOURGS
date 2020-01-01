@@ -35,8 +35,8 @@ The software is run using python 3.6. It is run using the terminal.
 You can install directly from github via the repository.
 
 ```
-git clone https://github.com/pySRURGS/pySRURGS.git
-cd pySRURGS
+git clone https://github.com/pySRURGS/pyGOURGS.git
+cd pyGOURGS
 pip install -r requirements.txt --user
 pip install . 
 ```
