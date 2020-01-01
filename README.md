@@ -67,6 +67,6 @@ With regards to community suggested changes, I would comment as to whether it wo
 
 ## Acknowledgments
 
-* The example scripts are derived from the DEAP project [link](https://github.com/DEAP/deap)
+* The example scripts are derived from the DEAP project: [link](https://github.com/DEAP/deap)
 * Luther Tychonievich created the algorithm mapping integers to full binary trees: [link](https://www.cs.virginia.edu/luther/blog/posts/434.html), [web archived link](http://web.archive.org/web/20190908010319/https://www.cs.virginia.edu/luther/blog/posts/434.html).
 * The icon is derived from the GNOME project and the respective artists. Taken from [link](https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg), [web archived link](https://web.archive.org/web/20161010072611/https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg). License: LGPL version 3.0. 
