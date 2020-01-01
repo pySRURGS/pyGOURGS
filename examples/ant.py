@@ -1,3 +1,5 @@
+# This code is derived from the DEAP project.
+# See https://github.com/DEAP/deap/blob/master/examples/gp/ant.py
 import sys
 import pyGOURGS.pyGOURGS as pg
 import copy
