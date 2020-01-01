@@ -28,7 +28,16 @@ The software is run using python 3.6. It is run using the terminal.
 
 ## Installing
 
-Install using pip from the terminal.
+You can install directly from github via the repository.
+
+```
+git clone https://github.com/pySRURGS/pySRURGS.git
+cd pySRURGS
+pip install -r requirements.txt --user
+pip install . 
+```
+
+Or you can install the latest pypi release using pip.
 
 ```
 pip install pyGOURGS
@@ -57,5 +66,7 @@ If you would like to contribute to the project or you need help, then please cre
 With regards to community suggested changes, I would comment as to whether it would be within the scope of the project to include the suggested changes. If both parties are in agreement, whomever is interested in developing the changes can make a pull request, or I will implement the suggested changes.
 
 ## Acknowledgments
+
 * The example scripts are derived from the DEAP project [link](https://github.com/DEAP/deap)
 * Luther Tychonievich created the algorithm mapping integers to full binary trees: [link](https://www.cs.virginia.edu/luther/blog/posts/434.html), [web archived link](http://web.archive.org/web/20190908010319/https://www.cs.virginia.edu/luther/blog/posts/434.html).
+* The icon is derived from the GNOME project and the respective artists. Taken from [link](https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg), [web archived link](https://web.archive.org/web/20161010072611/https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg). License: LGPL version 3.0. 
