@@ -26,7 +26,7 @@ and computational optimization.
 The software is run using python 3.6. It is run using the terminal.
 
 
-### Installing
+## Installing
 
 Install using pip from the terminal.
 
