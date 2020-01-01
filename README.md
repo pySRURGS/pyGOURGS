@@ -1,5 +1,7 @@
 ![Binoculars](image/pyGOURGS.svg)
 
+[![Build Status](https://travis-ci.org/pySRURGS/pyGOURGS.svg?branch=master)](https://travis-ci.org/pySRURGS/pyGOURGS)
+
 # Global Optimization by Uniform Random Global Search
 
 This software package solves problems whose solutions can be represented as 
