@@ -42,12 +42,6 @@ pip install -r requirements.txt --user
 pip install . 
 ```
 
-Or you can install the latest pypi release using pip.
-
-```
-pip install pyGOURGS
-```
-
 ## API
 
 [Documentation](https://pysrurgs.github.io/pyGOURGS/)
