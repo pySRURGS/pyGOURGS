@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyGOURGS",
-    version="0.0.16",
+    version="0.0.17",
     author="Sohrab Towfighi",
     author_email="sohrab.towfighi@mail.utoronto.ca",
     description="Global optimization by uniform random global search",
@@ -16,8 +16,7 @@ setuptools.setup(
     py_modules=["pyGOURGS"],
     package_data = {
     'examples': ['*'],
-    '': ['test.py', 'LICENSE.txt', 'README.md']
-    }
+    '': ['test.py', 'LICENSE.txt', 'README.md']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
