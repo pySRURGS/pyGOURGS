@@ -14,9 +14,6 @@ setuptools.setup(
     url="https://github.com/pySRURGS/pyGOURGS",
     packages=["pyGOURGS"],
     py_modules=["pyGOURGS"],
-    package_data = {
-    'examples': ['*'],
-    '': ['test.py', 'LICENSE.txt', 'README.md']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
