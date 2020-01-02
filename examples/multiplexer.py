@@ -3,13 +3,15 @@
 
 import random
 import operator
-
 import numpy
+import sys,os
+sys.path.append(os.path.join('..', 'pyGOURGS'))
+import pyGOURGS as pg
+
+# Initialize Multiplexer problem input and output vectors
 
 def if_then_else(condition, out1, out2):
     return out1 if condition else out2
-
-# Initialize Multiplexer problem input and output vectors
 
 MUX_SELECT_LINES = 3
 MUX_IN_LINES = 2 ** MUX_SELECT_LINES
@@ -35,20 +37,68 @@ for i in range(2 ** MUX_TOTAL_LINES):
         indexOutput += k * 2**j
     outputs[i] = inputs[i][indexOutput]
 
-pset = gp.PrimitiveSet("MAIN", MUX_TOTAL_LINES, "IN")
-pset.addPrimitive(operator.and_, 2)
-pset.addPrimitive(operator.or_, 2)
-pset.addPrimitive(operator.not_, 1)
-pset.addPrimitive(if_then_else, 3)
-pset.addTerminal(1)
-pset.addTerminal(0)
+pset = pg.PrimitiveSet()
+pset.add_operator("operator.and_", 2)
+pset.add_operator("operator.or_", 2)
+pset.add_operator("operator.not_", 1)
+pset.add_operator("if_then_else", 3)
+pset.add_variable("A0")
+pset.add_variable("A1")
+pset.add_variable("A2")
+pset.add_variable("D0")
+pset.add_variable("D1")
+pset.add_variable("D2")
+pset.add_variable("D3")
+pset.add_variable("D4")
+pset.add_variable("D5")
+pset.add_variable("D6")
+pset.add_variable("D7")
+enum = pg.Enumerator(pset)
 
-def evalMultiplexer(individual):
-    func = toolbox.compile(expr=individual)
+def compile(expr, pset):
+    """
+    Compiles the `expr` expression
+
+    Parameters
+    ----------
+
+    expr: a string of Python code or any object that when
+             converted into string produced a valid Python code
+             expression.                 
+
+    pset: Primitive set against which the expression is compiled
+        
+    Returns
+    -------
+        a function if the primitive set has 1 or more arguments,
+         or return the results produced by evaluating the tree
+    """    
+    code = str(expr)
+    if len(pset._variables) > 0:
+        args = ",".join(arg for arg in pset._variables)
+        code = "lambda {args}: {code}".format(args=args, code=code)
+    try:
+        return eval(code)
+    except MemoryError:
+        _, _, traceback = sys.exc_info()
+        raise MemoryError("Tree is too long.", traceback)
+
+def evalMultiplexer(individual, pset):
+    func = compile(individual, pset)
     return sum(func(*in_) == out for in_, out in zip(inputs, outputs)),
 
 def main():
-    pass
+    max_score = 0
+    iter = 0
+    for soln in enum.uniform_random_global_search(10000, 20000):
+        iter = iter + 1 
+        score = evalMultiplexer(soln, pset)[0]
+        if score > max_score:
+            max_score = score
+        if iter % 10 == 0:
+            print(score, max_score, iter)
+        if score == (2 ** MUX_TOTAL_LINES):
+            pdb.set_trace()
 
 if __name__ == "__main__":
     main()
