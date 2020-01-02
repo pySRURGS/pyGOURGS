@@ -45,9 +45,6 @@ is the successor to our earlier work [@towfighi2019pysrurgs], but uses a
 different enumeration algorithm that is much more generalizable whereas our 
 previous algorithm was only suitable for symbolic regression problems. 
 
-This software has broad applicability in the examination of the 
-solution space for global optimization problems and in the analysis of benchmark
-problems, as it permits brute force computations in addition to random search.
 In the seminal work of [@langdon:1998:antspace], they enumerated the 
 solution space using brute force and were able to determine that different types
 of random search can require differing amounts of computational effort to 
@@ -56,7 +53,12 @@ used to generate the initial population of genetic programming solutions perform
 much worse than does uniform random search. We found one prominent modern paper 
 which claimed that genetic programming outperformed random search [@Sipper:2019],
 when in fact they were comparing genetic programming to a biased type of random 
-search which they then put on further unequal footing. 
+search which they then put on further unequal footing. This software has broad 
+applicability in the examination of the solution space for global optimization 
+problems and in the analysis of benchmark problems, as it permits brute force 
+computations in addition to random search. This software will be of use to 
+researchers looking to compare the performance of their algorithms with that of
+pure random search on a wide variety of global optimization problems.
 
 # Acknowledgements
 
