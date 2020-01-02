@@ -40,10 +40,33 @@ Licence: GPL 3.0;
 https://github.com/pySRURGS/pyGOURGS
 &#39;&#39;&#39;
 
+from functools import lru_cache
+from methodtools import lru_cache as mt_lru_cache
+import weakref
 import mpmath
 import numpy as np
 import random
 import pdb
+import sys
+
+class InvalidOperatorIndex(Exception):
+    pass
+
+class InvalidTerminalIndex(Exception):
+    pass
+
+class InvalidTreeIndex(Exception):
+    pass
+
+def count_nodes_in_tree(tree):
+    &#39;&#39;&#39;
+        Given an n-ary tree in string format, counts the number of nodes in the 
+        tree               
+    &#39;&#39;&#39;
+    n_terminals = tree.count(&#39;..&#39;)
+    n_operators = tree.count(&#39;(&#39;)
+    n_nodes = n_terminals + n_operators
+    return n_nodes
 
 def print_grid(list_iter_0, list_iter_1, funchandle):
     &#39;&#39;&#39;
@@ -179,7 +202,7 @@ class PrimitiveSet(object):
         self._variables = list()
         self._fitting_parameters = list()
         self._operators = dict()
-        self._names = list()        
+        self._names = list()
 
     def add_operator(self, func_handle, arity):
         &#34;&#34;&#34;
@@ -188,7 +211,7 @@ class PrimitiveSet(object):
 
         Parameters
         ----------
-        func_handle : function or builtin_function_or_method
+        func_handle : str
             The name of a function which will be used in the list of operators.
 
         arity : integer
@@ -215,10 +238,12 @@ class PrimitiveSet(object):
 
         Parameters
         ----------
-        variable
+        variable: str
             The variable or value which will be used as a terminal. Its type 
             can be anything, but the operators will need to be able to take 
-            `variable` as an input.
+            `variable` as an input. Within pyGOURGS, it is treated as a string,
+            but will eventually be evaluated to whatever results from 
+            `eval(variable)`.
             
         Returns
         -------
@@ -409,6 +434,7 @@ class Enumerator(object):
     def __init__(self, pset):
         self._pset = pset
         self.assign_variables_from_pset()
+        self._results_for_calculate_Q = {}
 
     def assign_variables_from_pset(self):
         &#39;&#39;&#39;
@@ -418,6 +444,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
+    @mt_lru_cache(maxsize=128)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -440,12 +467,12 @@ class Enumerator(object):
         arities = self._pset.get_arities()
         k = len(arities)
         if i == 0:
-            tree = &#39;.&#39;
+            tree = &#39;..&#39;
         elif i in range(1, k+1):
             tree = &#39;[&#39;
             m = arities[i-1]
             for i in range(0, m):
-                tree += &#39;.,&#39;
+                tree += &#39;..,&#39;
             tree = tree[:-1] + &#39;]&#39;
         else:
             e, j = divmod(i-1, k)            
@@ -457,7 +484,8 @@ class Enumerator(object):
             subtrees = [self.ith_n_ary_tree(x) for x in list_bits_deci]
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
-
+    
+    @mt_lru_cache(maxsize=128)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -499,10 +527,11 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
-        `b` in the `i`th tree.
+        arities[`b`] in the `i`th tree.
 
         Parameters
         ----------
@@ -524,6 +553,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -549,6 +579,7 @@ class Enumerator(object):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -575,6 +606,7 @@ class Enumerator(object):
                 R_i = R_i * G_i_b
         return R_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -608,7 +640,7 @@ class Enumerator(object):
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-
+    @mt_lru_cache(maxsize=128)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -631,6 +663,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -644,7 +677,11 @@ class Enumerator(object):
         -------
         Q: int
             The number of possible solutions in the solution space
-        &#34;&#34;&#34;        
+        &#34;&#34;&#34; 
+        try:
+            (Q, weights) = self._results_for_calculate_Q[N]            
+        except KeyError:
+            pass
         Q = 0
         weights = list()
         for i in range(0, N):
@@ -655,6 +692,7 @@ class Enumerator(object):
             Q = Q + product
         weights = np.array(weights)
         weights = weights / np.sum(weights)
+        self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
     def generate_specified_solution(self, i, r, s, N):        
@@ -684,17 +722,16 @@ class Enumerator(object):
         solution: int
             The candidate solution generated from the supplied indices
         &#34;&#34;&#34;
-        terminals = self._pset.get_terminals()
-    
+        terminals = self._pset.get_terminals()    
         pset = self._pset
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r &gt;= R_i or r &lt; 0:
-            raise Exception(&#34;Invalid value of r&#34;)
+            raise InvalidOperatorIndex()
         if s &gt;= S_i or s &lt; 0:
-            raise Exception(&#34;Invalid value of s&#34;)
+            raise InvalidTerminalIndex()
         if i &gt; N:
-            raise Exception(&#34;Invalid value of i w.r.t. N&#34;)
+            raise InvalidTreeIndex()
         # generate the tree 
         tree = self.ith_n_ary_tree(i)
         # generate the operator configuration 
@@ -721,16 +758,15 @@ class Enumerator(object):
             start_index = working_tree.index(&#39;[&#39;)
             arity = get_arity_of_term(start_index, working_tree)            
             index = arities.index(arity)
-            operator = operator_config[index].pop()
-            operator = operator.__name__
+            operator = operator_config[index].pop()            
             working_tree = (working_tree[0:start_index] + operator + 
                             &#39;(&#39; + working_tree[start_index+1:])
         working_tree = working_tree.replace(&#39;]&#39;,&#39;)&#39;,num_opers)        
         # swap in the terminals 
-        num_terminals = working_tree.count(&#39;.&#39;)
+        num_terminals = working_tree.count(&#39;..&#39;)
         for i in range(0, num_terminals):
             terminal = str(terminal_config.pop())
-            working_tree = working_tree.replace(&#39;.&#39;, terminal, 1)        
+            working_tree = working_tree.replace(&#39;..&#39;, terminal, 1)        
         tree = working_tree 
         return tree
 
@@ -789,21 +825,87 @@ class Enumerator(object):
         for j in range(0, num_soln):
             yield self.uniform_random_global_search_once(N)
         
+    def exhaustive_global_search(self, N, max_iters=None):
+        &#34;&#34;&#34;
+        Yields (this is a generator) candidate solutions incrementally 
+        increasing the operator/terminals configurations indices and tree index 
+        iterator
+        
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+        
+        max_iters: int
+            The maximum number of solutions which can be considered. Will 
+            overrule `N` in terms of cutting off the run.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        &#34;&#34;&#34;        
+        iter = 1
+        for i in range(0, N):
+            R_i = int(self.calculate_R_i(i))
+            S_i = int(self.calculate_S_i(i))
+            for r in range(0, R_i):
+                for s in range(0, S_i):
+                    if max_iters is not None:
+                        iter = iter + 1 
+                        if iter &gt; max_iters:
+                            return
+                    candidate_solution = self.generate_specified_solution(i,
+                                                                    r, s, N)                    
+                    yield candidate_solution
+        
+def compile(expr, pset):
+    &#34;&#34;&#34;
+    Compiles the `expr` expression
+
+    Parameters
+    ----------
+
+    expr: a string of Python code or any object that when
+             converted into string produced a valid Python code
+             expression.                 
+
+    pset: Primitive set against which the expression is compiled
+        
+    Returns
+    -------
+        a function if the primitive set has 1 or more arguments,
+         or return the results produced by evaluating the tree
+    &#34;&#34;&#34;    
+    code = str(expr)
+    if len(pset._variables) &gt; 0:
+        args = &#34;,&#34;.join(arg for arg in pset._variables)
+        code = &#34;lambda {args}: {code}&#34;.format(args=args, code=code)
+    try:
+        return eval(code)
+    except MemoryError:
+        _, _, traceback = sys.exc_info()
+        raise MemoryError(&#34;Tree is too long.&#34;, traceback)
 
 if __name__ == &#39;__main__&#39;:
     from operator import add, sub, mul, truediv
     pset = PrimitiveSet()
-    pset.add_operator(add, 2)
-    pset.add_operator(sub, 2)
-    pset.add_operator(truediv, 2)
-    pset.add_variable(1)
-    pset.add_variable(0)
+    pset.add_operator(&#34;add&#34;, 2)
+    pset.add_operator(&#34;sub&#34;, 2)
+    pset.add_operator(&#34;truediv&#34;, 2)
+    pset.add_variable(&#34;x&#34;)
+    pset.add_variable(&#34;y&#34;)
     enum = Enumerator(pset)
     i_list = range(0,10)
     b_list = range(0,10)    
     enum.generate_specified_solution(10, 80, 10, 10)
     sol = enum.uniform_random_global_search_once(10)
+    compile(sol, pset)
     print(sol)
+    for sol in enum.exhaustive_global_search(2):
+        print(sol)
+    
     </code></pre>
 </details>
 </section>
@@ -879,6 +981,77 @@ if __name__ == &#39;__main__&#39;:
     else:
         raise Exception(&#34;Invalid m&#34;)
     return result    </code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.compile"><code class="name flex">
+<span>def <span class="ident">compile</span></span>(<span>expr, pset)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Compiles the <code>expr</code> expression</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>expr</code></strong> :&ensp;<code>a</code> <code>string</code> of <code>Python</code> <code>code</code> or <code>any</code> <code>object</code> <code>that</code> <code>when</code></dt>
+<dd>converted into string produced a valid Python code
+expression.</dd>
+<dt><strong><code>pset</code></strong> :&ensp;<code>Primitive</code> <code>set</code> <code>against</code> <code>which</code> <code>the</code> <code>expression</code> <code>is</code> <code>compiled</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<pre><code>a function if the primitive set has 1 or more arguments,
+ or return the results produced by evaluating the tree
+</code></pre></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compile(expr, pset):
+    &#34;&#34;&#34;
+    Compiles the `expr` expression
+
+    Parameters
+    ----------
+
+    expr: a string of Python code or any object that when
+             converted into string produced a valid Python code
+             expression.                 
+
+    pset: Primitive set against which the expression is compiled
+        
+    Returns
+    -------
+        a function if the primitive set has 1 or more arguments,
+         or return the results produced by evaluating the tree
+    &#34;&#34;&#34;    
+    code = str(expr)
+    if len(pset._variables) &gt; 0:
+        args = &#34;,&#34;.join(arg for arg in pset._variables)
+        code = &#34;lambda {args}: {code}&#34;.format(args=args, code=code)
+    try:
+        return eval(code)
+    except MemoryError:
+        _, _, traceback = sys.exc_info()
+        raise MemoryError(&#34;Tree is too long.&#34;, traceback)</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.count_nodes_in_tree"><code class="name flex">
+<span>def <span class="ident">count_nodes_in_tree</span></span>(<span>tree)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Given an n-ary tree in string format, counts the number of nodes in the
+tree</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def count_nodes_in_tree(tree):
+    &#39;&#39;&#39;
+        Given an n-ary tree in string format, counts the number of nodes in the 
+        tree               
+    &#39;&#39;&#39;
+    n_terminals = tree.count(&#39;..&#39;)
+    n_operators = tree.count(&#39;(&#39;)
+    n_nodes = n_terminals + n_operators
+    return n_nodes</code></pre>
 </details>
 </dd>
 <dt id="pyGOURGS.decimal_to_base_m"><code class="name flex">
@@ -1206,6 +1379,7 @@ to take the cartesian product with itself.</dd>
     def __init__(self, pset):
         self._pset = pset
         self.assign_variables_from_pset()
+        self._results_for_calculate_Q = {}
 
     def assign_variables_from_pset(self):
         &#39;&#39;&#39;
@@ -1215,6 +1389,7 @@ to take the cartesian product with itself.</dd>
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
+    @mt_lru_cache(maxsize=128)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -1237,12 +1412,12 @@ to take the cartesian product with itself.</dd>
         arities = self._pset.get_arities()
         k = len(arities)
         if i == 0:
-            tree = &#39;.&#39;
+            tree = &#39;..&#39;
         elif i in range(1, k+1):
             tree = &#39;[&#39;
             m = arities[i-1]
             for i in range(0, m):
-                tree += &#39;.,&#39;
+                tree += &#39;..,&#39;
             tree = tree[:-1] + &#39;]&#39;
         else:
             e, j = divmod(i-1, k)            
@@ -1254,7 +1429,8 @@ to take the cartesian product with itself.</dd>
             subtrees = [self.ith_n_ary_tree(x) for x in list_bits_deci]
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
-
+    
+    @mt_lru_cache(maxsize=128)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -1296,10 +1472,11 @@ to take the cartesian product with itself.</dd>
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
-        `b` in the `i`th tree.
+        arities[`b`] in the `i`th tree.
 
         Parameters
         ----------
@@ -1321,6 +1498,7 @@ to take the cartesian product with itself.</dd>
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -1346,6 +1524,7 @@ to take the cartesian product with itself.</dd>
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
+    @mt_lru_cache(maxsize=128)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -1372,6 +1551,7 @@ to take the cartesian product with itself.</dd>
                 R_i = R_i * G_i_b
         return R_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -1405,7 +1585,7 @@ to take the cartesian product with itself.</dd>
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-
+    @mt_lru_cache(maxsize=128)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -1428,6 +1608,7 @@ to take the cartesian product with itself.</dd>
         S_i = mempower(m, j_i)
         return S_i
 
+    @mt_lru_cache(maxsize=128)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -1441,7 +1622,11 @@ to take the cartesian product with itself.</dd>
         -------
         Q: int
             The number of possible solutions in the solution space
-        &#34;&#34;&#34;        
+        &#34;&#34;&#34; 
+        try:
+            (Q, weights) = self._results_for_calculate_Q[N]            
+        except KeyError:
+            pass
         Q = 0
         weights = list()
         for i in range(0, N):
@@ -1452,6 +1637,7 @@ to take the cartesian product with itself.</dd>
             Q = Q + product
         weights = np.array(weights)
         weights = weights / np.sum(weights)
+        self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
     def generate_specified_solution(self, i, r, s, N):        
@@ -1481,17 +1667,16 @@ to take the cartesian product with itself.</dd>
         solution: int
             The candidate solution generated from the supplied indices
         &#34;&#34;&#34;
-        terminals = self._pset.get_terminals()
-    
+        terminals = self._pset.get_terminals()    
         pset = self._pset
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         if r &gt;= R_i or r &lt; 0:
-            raise Exception(&#34;Invalid value of r&#34;)
+            raise InvalidOperatorIndex()
         if s &gt;= S_i or s &lt; 0:
-            raise Exception(&#34;Invalid value of s&#34;)
+            raise InvalidTerminalIndex()
         if i &gt; N:
-            raise Exception(&#34;Invalid value of i w.r.t. N&#34;)
+            raise InvalidTreeIndex()
         # generate the tree 
         tree = self.ith_n_ary_tree(i)
         # generate the operator configuration 
@@ -1518,16 +1703,15 @@ to take the cartesian product with itself.</dd>
             start_index = working_tree.index(&#39;[&#39;)
             arity = get_arity_of_term(start_index, working_tree)            
             index = arities.index(arity)
-            operator = operator_config[index].pop()
-            operator = operator.__name__
+            operator = operator_config[index].pop()            
             working_tree = (working_tree[0:start_index] + operator + 
                             &#39;(&#39; + working_tree[start_index+1:])
         working_tree = working_tree.replace(&#39;]&#39;,&#39;)&#39;,num_opers)        
         # swap in the terminals 
-        num_terminals = working_tree.count(&#39;.&#39;)
+        num_terminals = working_tree.count(&#39;..&#39;)
         for i in range(0, num_terminals):
             terminal = str(terminal_config.pop())
-            working_tree = working_tree.replace(&#39;.&#39;, terminal, 1)        
+            working_tree = working_tree.replace(&#39;..&#39;, terminal, 1)        
         tree = working_tree 
         return tree
 
@@ -1584,7 +1768,42 @@ to take the cartesian product with itself.</dd>
         if deterministic == True:
             random.seed(0)
         for j in range(0, num_soln):
-            yield self.uniform_random_global_search_once(N)</code></pre>
+            yield self.uniform_random_global_search_once(N)
+        
+    def exhaustive_global_search(self, N, max_iters=None):
+        &#34;&#34;&#34;
+        Yields (this is a generator) candidate solutions incrementally 
+        increasing the operator/terminals configurations indices and tree index 
+        iterator
+        
+        Parameters
+        ----------
+
+        N: int 
+            User specified maximum complexity index
+        
+        max_iters: int
+            The maximum number of solutions which can be considered. Will 
+            overrule `N` in terms of cutting off the run.
+            
+        Yields
+        -------
+        candidate_solution: string
+            The candidate solution generated
+        &#34;&#34;&#34;        
+        iter = 1
+        for i in range(0, N):
+            R_i = int(self.calculate_R_i(i))
+            S_i = int(self.calculate_S_i(i))
+            for r in range(0, R_i):
+                for s in range(0, S_i):
+                    if max_iters is not None:
+                        iter = iter + 1 
+                        if iter &gt; max_iters:
+                            return
+                    candidate_solution = self.generate_specified_solution(i,
+                                                                    r, s, N)                    
+                    yield candidate_solution</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -1611,7 +1830,7 @@ to take the cartesian product with itself.</dd>
 </code></dt>
 <dd>
 <section class="desc"><p>Calculates the number of possible configurations of operators of arity
-<code>b</code> in the <code>i</code>th tree.</p>
+arities[<code>b</code>] in the <code>i</code>th tree.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
@@ -1629,10 +1848,11 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_G_i_b(self, i, b):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_G_i_b(self, i, b):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
-    `b` in the `i`th tree.
+    arities[`b`] in the `i`th tree.
 
     Parameters
     ----------
@@ -1674,7 +1894,8 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_Q(self, N):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_Q(self, N):
     &#34;&#34;&#34;
     Calculates the number of total number of solutions in the solution space
 
@@ -1687,7 +1908,11 @@ trees</dd>
     -------
     Q: int
         The number of possible solutions in the solution space
-    &#34;&#34;&#34;        
+    &#34;&#34;&#34; 
+    try:
+        (Q, weights) = self._results_for_calculate_Q[N]            
+    except KeyError:
+        pass
     Q = 0
     weights = list()
     for i in range(0, N):
@@ -1698,6 +1923,7 @@ trees</dd>
         Q = Q + product
     weights = np.array(weights)
     weights = weights / np.sum(weights)
+    self._results_for_calculate_Q[N] = (Q, weights)
     return Q, weights</code></pre>
 </details>
 </dd>
@@ -1723,7 +1949,8 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_R_i(self, i):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_R_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators in the 
     `i`th tree.
@@ -1772,7 +1999,8 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_S_i(self, i):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_S_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of terminals in the 
     `i`th tree.
@@ -1815,7 +2043,8 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_a_i(self, i):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_a_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of terminals in the `i`th tree
 
@@ -1871,7 +2100,8 @@ of arity <code>arities</code>[b]</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_all_G_i_b(self, i):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_all_G_i_b(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
     `b` in the `i`th tree for all values of `b`
@@ -1920,7 +2150,8 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calculate_l_i_b(self, i, b):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def calculate_l_i_b(self, i, b):
     &#34;&#34;&#34;
     Calculates the number of nonterminal nodes, with arity `arities[b]` in 
     tree `i`, called l_i_b
@@ -1960,6 +2191,66 @@ trees</dd>
         for i_deinterleaved in list_bits_deci:
             l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
     return l_i_b</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.Enumerator.exhaustive_global_search"><code class="name flex">
+<span>def <span class="ident">exhaustive_global_search</span></span>(<span>self, N, max_iters=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Yields (this is a generator) candidate solutions incrementally
+increasing the operator/terminals configurations indices and tree index
+iterator</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>N</code></strong> :&ensp;<code>int</code></dt>
+<dd>User specified maximum complexity index</dd>
+<dt><strong><code>max_iters</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of solutions which can be considered. Will
+overrule <code>N</code> in terms of cutting off the run.</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><strong><code>candidate_solution</code></strong> :&ensp;<code>string</code></dt>
+<dd>The candidate solution generated</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exhaustive_global_search(self, N, max_iters=None):
+    &#34;&#34;&#34;
+    Yields (this is a generator) candidate solutions incrementally 
+    increasing the operator/terminals configurations indices and tree index 
+    iterator
+    
+    Parameters
+    ----------
+
+    N: int 
+        User specified maximum complexity index
+    
+    max_iters: int
+        The maximum number of solutions which can be considered. Will 
+        overrule `N` in terms of cutting off the run.
+        
+    Yields
+    -------
+    candidate_solution: string
+        The candidate solution generated
+    &#34;&#34;&#34;        
+    iter = 1
+    for i in range(0, N):
+        R_i = int(self.calculate_R_i(i))
+        S_i = int(self.calculate_S_i(i))
+        for r in range(0, R_i):
+            for s in range(0, S_i):
+                if max_iters is not None:
+                    iter = iter + 1 
+                    if iter &gt; max_iters:
+                        return
+                candidate_solution = self.generate_specified_solution(i,
+                                                                r, s, N)                    
+                yield candidate_solution</code></pre>
 </details>
 </dd>
 <dt id="pyGOURGS.Enumerator.generate_specified_solution"><code class="name flex">
@@ -2018,17 +2309,16 @@ of the terminals</dd>
     solution: int
         The candidate solution generated from the supplied indices
     &#34;&#34;&#34;
-    terminals = self._pset.get_terminals()
-
+    terminals = self._pset.get_terminals()    
     pset = self._pset
     R_i = self.calculate_R_i(i)
     S_i = self.calculate_S_i(i)
     if r &gt;= R_i or r &lt; 0:
-        raise Exception(&#34;Invalid value of r&#34;)
+        raise InvalidOperatorIndex()
     if s &gt;= S_i or s &lt; 0:
-        raise Exception(&#34;Invalid value of s&#34;)
+        raise InvalidTerminalIndex()
     if i &gt; N:
-        raise Exception(&#34;Invalid value of i w.r.t. N&#34;)
+        raise InvalidTreeIndex()
     # generate the tree 
     tree = self.ith_n_ary_tree(i)
     # generate the operator configuration 
@@ -2055,16 +2345,15 @@ of the terminals</dd>
         start_index = working_tree.index(&#39;[&#39;)
         arity = get_arity_of_term(start_index, working_tree)            
         index = arities.index(arity)
-        operator = operator_config[index].pop()
-        operator = operator.__name__
+        operator = operator_config[index].pop()            
         working_tree = (working_tree[0:start_index] + operator + 
                         &#39;(&#39; + working_tree[start_index+1:])
     working_tree = working_tree.replace(&#39;]&#39;,&#39;)&#39;,num_opers)        
     # swap in the terminals 
-    num_terminals = working_tree.count(&#39;.&#39;)
+    num_terminals = working_tree.count(&#39;..&#39;)
     for i in range(0, num_terminals):
         terminal = str(terminal_config.pop())
-        working_tree = working_tree.replace(&#39;.&#39;, terminal, 1)        
+        working_tree = working_tree.replace(&#39;..&#39;, terminal, 1)        
     tree = working_tree 
     return tree</code></pre>
 </details>
@@ -2092,7 +2381,8 @@ define an operator.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def ith_n_ary_tree(self, i):
+<pre><code class="python">@mt_lru_cache(maxsize=128)
+def ith_n_ary_tree(self, i):
     &#34;&#34;&#34;
     Generates the `i`th n-ary tree.
     
@@ -2114,12 +2404,12 @@ define an operator.</dd>
     arities = self._pset.get_arities()
     k = len(arities)
     if i == 0:
-        tree = &#39;.&#39;
+        tree = &#39;..&#39;
     elif i in range(1, k+1):
         tree = &#39;[&#39;
         m = arities[i-1]
         for i in range(0, m):
-            tree += &#39;.,&#39;
+            tree += &#39;..,&#39;
         tree = tree[:-1] + &#39;]&#39;
     else:
         e, j = divmod(i-1, k)            
@@ -2237,6 +2527,63 @@ random behaviour.</dd>
 </dd>
 </dl>
 </dd>
+<dt id="pyGOURGS.InvalidOperatorIndex"><code class="flex name class">
+<span>class <span class="ident">InvalidOperatorIndex</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidOperatorIndex(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="pyGOURGS.InvalidTerminalIndex"><code class="flex name class">
+<span>class <span class="ident">InvalidTerminalIndex</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidTerminalIndex(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="pyGOURGS.InvalidTreeIndex"><code class="flex name class">
+<span>class <span class="ident">InvalidTreeIndex</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidTreeIndex(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 <dt id="pyGOURGS.PrimitiveSet"><code class="flex name class">
 <span>class <span class="ident">PrimitiveSet</span></span>
 </code></dt>
@@ -2286,7 +2633,7 @@ optimization problem.
         self._variables = list()
         self._fitting_parameters = list()
         self._operators = dict()
-        self._names = list()        
+        self._names = list()
 
     def add_operator(self, func_handle, arity):
         &#34;&#34;&#34;
@@ -2295,7 +2642,7 @@ optimization problem.
 
         Parameters
         ----------
-        func_handle : function or builtin_function_or_method
+        func_handle : str
             The name of a function which will be used in the list of operators.
 
         arity : integer
@@ -2322,10 +2669,12 @@ optimization problem.
 
         Parameters
         ----------
-        variable
+        variable: str
             The variable or value which will be used as a terminal. Its type 
             can be anything, but the operators will need to be able to take 
-            `variable` as an input.
+            `variable` as an input. Within pyGOURGS, it is treated as a string,
+            but will eventually be evaluated to whatever results from 
+            `eval(variable)`.
             
         Returns
         -------
@@ -2445,7 +2794,7 @@ stored in self._fitting_parameters.</p>
 stored in self._operators.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>func_handle</code></strong> :&ensp;<code>function</code> or <code>builtin_function_or_method</code></dt>
+<dt><strong><code>func_handle</code></strong> :&ensp;<code>str</code></dt>
 <dd>The name of a function which will be used in the list of operators.</dd>
 <dt><strong><code>arity</code></strong> :&ensp;<code>integer</code></dt>
 <dd>The number of inputs of the function <code>func_handle</code></dd>
@@ -2466,7 +2815,7 @@ stored in self._operators.</p>
 
     Parameters
     ----------
-    func_handle : function or builtin_function_or_method
+    func_handle : str
         The name of a function which will be used in the list of operators.
 
     arity : integer
@@ -2495,10 +2844,12 @@ stored in self._operators.</p>
 stored in self._variables.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>variable</code></strong></dt>
+<dt><strong><code>variable</code></strong> :&ensp;<code>str</code></dt>
 <dd>The variable or value which will be used as a terminal. Its type
 can be anything, but the operators will need to be able to take
-<code>variable</code> as an input.</dd>
+<code>variable</code> as an input. Within pyGOURGS, it is treated as a string,
+but will eventually be evaluated to whatever results from
+<code>eval(variable)</code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -2516,10 +2867,12 @@ can be anything, but the operators will need to be able to take
 
     Parameters
     ----------
-    variable
+    variable: str
         The variable or value which will be used as a terminal. Its type 
         can be anything, but the operators will need to be able to take 
-        `variable` as an input.
+        `variable` as an input. Within pyGOURGS, it is treated as a string,
+        but will eventually be evaluated to whatever results from 
+        `eval(variable)`.
         
     Returns
     -------
@@ -2656,6 +3009,8 @@ can be anything, but the operators will need to be able to take
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyGOURGS.base_m_to_decimal" href="#pyGOURGS.base_m_to_decimal">base_m_to_decimal</a></code></li>
+<li><code><a title="pyGOURGS.compile" href="#pyGOURGS.compile">compile</a></code></li>
+<li><code><a title="pyGOURGS.count_nodes_in_tree" href="#pyGOURGS.count_nodes_in_tree">count_nodes_in_tree</a></code></li>
 <li><code><a title="pyGOURGS.decimal_to_base_m" href="#pyGOURGS.decimal_to_base_m">decimal_to_base_m</a></code></li>
 <li><code><a title="pyGOURGS.deinterleave" href="#pyGOURGS.deinterleave">deinterleave</a></code></li>
 <li><code><a title="pyGOURGS.get_arity_of_term" href="#pyGOURGS.get_arity_of_term">get_arity_of_term</a></code></li>
@@ -2677,11 +3032,21 @@ can be anything, but the operators will need to be able to take
 <li><code><a title="pyGOURGS.Enumerator.calculate_a_i" href="#pyGOURGS.Enumerator.calculate_a_i">calculate_a_i</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.calculate_all_G_i_b" href="#pyGOURGS.Enumerator.calculate_all_G_i_b">calculate_all_G_i_b</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.calculate_l_i_b" href="#pyGOURGS.Enumerator.calculate_l_i_b">calculate_l_i_b</a></code></li>
+<li><code><a title="pyGOURGS.Enumerator.exhaustive_global_search" href="#pyGOURGS.Enumerator.exhaustive_global_search">exhaustive_global_search</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.generate_specified_solution" href="#pyGOURGS.Enumerator.generate_specified_solution">generate_specified_solution</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.ith_n_ary_tree" href="#pyGOURGS.Enumerator.ith_n_ary_tree">ith_n_ary_tree</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.uniform_random_global_search" href="#pyGOURGS.Enumerator.uniform_random_global_search">uniform_random_global_search</a></code></li>
 <li><code><a title="pyGOURGS.Enumerator.uniform_random_global_search_once" href="#pyGOURGS.Enumerator.uniform_random_global_search_once">uniform_random_global_search_once</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="pyGOURGS.InvalidOperatorIndex" href="#pyGOURGS.InvalidOperatorIndex">InvalidOperatorIndex</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyGOURGS.InvalidTerminalIndex" href="#pyGOURGS.InvalidTerminalIndex">InvalidTerminalIndex</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyGOURGS.InvalidTreeIndex" href="#pyGOURGS.InvalidTreeIndex">InvalidTreeIndex</a></code></h4>
 </li>
 <li>
 <h4><code><a title="pyGOURGS.PrimitiveSet" href="#pyGOURGS.PrimitiveSet">PrimitiveSet</a></code></h4>

@@ -497,7 +497,7 @@ class Enumerator(object):
     def calculate_G_i_b(self, i, b):
         """
         Calculates the number of possible configurations of operators of arity 
-        `b` in the `i`th tree.
+        arities[`b`] in the `i`th tree.
 
         Parameters
         ----------
