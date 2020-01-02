@@ -99,6 +99,7 @@ def main():
             print(score, max_score, iter)
         if score == (2 ** MUX_TOTAL_LINES):
             pdb.set_trace()
+            print("We have reached a perfect solution")
 
 if __name__ == "__main__":
     main()

@@ -125,5 +125,6 @@ if __name__ == "__main__":
             print(score, max_score, iter)
         if score == 89:
             pdb.set_trace()
+            print("We have reached a perfect solution")
         
     
