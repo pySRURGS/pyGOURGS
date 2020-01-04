@@ -843,6 +843,11 @@ def compile(expr, pset):
     -------
         a function if the primitive set has 1 or more arguments,
          or return the results produced by evaluating the tree
+     
+    Note
+    ----
+    This function needs to be copied into the scope of the script where the 
+    problem is defined. 
     """    
     code = str(expr)
     if len(pset._variables) > 0:
@@ -853,6 +858,26 @@ def compile(expr, pset):
     except MemoryError:
         _, _, traceback = sys.exc_info()
         raise MemoryError("Tree is too long.", traceback)
+
+def initialize_db(path_to_db):
+    '''
+        Initializes the SqliteDict database file with an initial null value
+        for the 'best_result' key
+    '''
+    with SqliteDict(path_to_db, autocommit=True) as results_dict:
+        try:
+            results_dict['best_result']
+        except KeyError:
+            results_dict['best_result'] = Result(
+                None, None, np.inf, None, None)
+    return
+
+def save_result_to_db(path_to_db, result, input):
+    '''
+        Saves results to the SqliteDict file 
+    '''
+    with SqliteDict(path_to_db, autocommit=True) as results_dict:
+        results_dict[input] = result    
 
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
