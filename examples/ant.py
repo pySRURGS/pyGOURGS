@@ -1,12 +1,14 @@
 # This code is derived from the DEAP project.
 # See https://github.com/DEAP/deap/blob/master/examples/gp/ant.py
 import sys
-import pyGOURGS.pyGOURGS as pg
 import copy
 import random
 import numpy
 import pdb
 from functools import partial
+import sys,os
+sys.path.append(os.path.join('..', 'pyGOURGS'))
+import pyGOURGS as pg
 
 def progn(*args):
     for arg in args:
