@@ -1,5 +1,5 @@
 # This code is derived from the DEAP project
-# https://github.com/DEAP/deap/blob/454b4f65a9c944ea2c90b38a75d384cddf524220/examples/gp/multiplexer.py
+# https://github.com/DEAP/deap/blob/master/examples/gp/multiplexer.py
 
 import random
 import operator

@@ -1,43 +1,30 @@
 # This code is derived from the DEAP project
-# https://github.com/DEAP/deap/blob/master/examples/gp/parity.py
+# https://github.com/DEAP/deap/blob/master/examples/gp/symbreg.py
 
-import random
 import operator
+import math
+import random
 import numpy
-import sys,os
-sys.path.append(os.path.join('..', 'pyGOURGS'))
-import pyGOURGS as pg
 
-# Initialize Parity problem input and output matrices
-PARITY_FANIN_M = 6
-PARITY_SIZE_M = 2**PARITY_FANIN_M
-
-inputs = [None] * PARITY_SIZE_M
-outputs = [None] * PARITY_SIZE_M
-
-for i in range(PARITY_SIZE_M):
-    inputs[i] = [None] * PARITY_FANIN_M
-    value = i
-    dividor = PARITY_SIZE_M
-    parity = 1
-    for j in range(PARITY_FANIN_M):
-        dividor /= 2
-        if value >= dividor:
-            inputs[i][j] = 1
-            parity = int(not parity)
-            value -= dividor
-        else:
-            inputs[i][j] = 0
-    outputs[i] = parity
+# Define new functions
+def protectedDiv(left, right):
+    try:
+        return left / right
+    except ZeroDivisionError:
+        return 1
 
 pset = pg.PrimitiveSet()
-pset.add_operator("operator.and_", 2)
-pset.add_operator("operator.or_", 2)
-pset.add_operator("operator.xor", 2)
-pset.add_operator("operator.not_", 1)
-for i in range(0,PARITY_FANIN_M):
-    pset.add_variable("BOOL"+str(i))
+pset.add_operator(operator.add, 2)
+pset.add_operator(operator.sub, 2)
+pset.add_operator(operator.mul, 2)
+pset.add_operator(protectedDiv, 2)
+pset.add_operator(operator.neg, 1)
+pset.add_operator(math.cos, 1)
+pset.add_operator(math.sin, 1)
+pset.add_terminal('x')
 enum = pg.Enumerator(pset)
+
+points=[x/10. for x in range(-10,10)]
 
 def compile(expr, pset):
     """
@@ -56,6 +43,11 @@ def compile(expr, pset):
     -------
         a function if the primitive set has 1 or more arguments,
          or return the results produced by evaluating the tree
+     
+    Note
+    ----
+    This function needs to be copied into the scope of the script where the 
+    problem is defined. 
     """    
     code = str(expr)
     if len(pset._variables) > 0:
@@ -65,11 +57,14 @@ def compile(expr, pset):
         return eval(code)
     except MemoryError:
         _, _, traceback = sys.exc_info()
-        raise MemoryError("Tree is too long.", traceback)
 
-def evalParity(individual, pset):
-    func = compile(individual,pset)
-    return sum(func(*in_) == out for in_, out in zip(inputs, outputs)),
+def evalSymbReg(individual, points, pset):
+    # Transform the tree expression in a callable function
+    func = compile(individual, pset)
+    # Evaluate the mean squared error between the expression
+    # and the real function : x**4 + x**3 + x**2 + x
+    sqerrors = ((func(x) - x**4 - x**3 - x**2 - x)**2 for x in points)
+    return math.fsum(sqerrors) / len(points),
 
 
 if __name__ == "__main__":
@@ -80,7 +75,7 @@ if __name__ == "__main__":
     iter = 0
     for soln in enum.uniform_random_global_search(10000, n_iters):
         iter = iter + 1 
-        score = evalParity(soln, pset)[0]
+        score = evalSymbReg(soln, points, pset)[0]
         pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
