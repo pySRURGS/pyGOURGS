@@ -71,12 +71,17 @@ def evalParity(individual, pset):
     func = compile(individual,pset)
     return sum(func(*in_) == out for in_, out in zip(inputs, outputs)),
 
-def main():
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    output_db = args[0]
+    n_iters = int(args[1])
     max_score = 0
     iter = 0
-    for soln in enum.uniform_random_global_search(10000, 20000):
+    for soln in enum.uniform_random_global_search(10000, n_iters):
         iter = iter + 1 
         score = evalParity(soln, pset)[0]
+        pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
         if iter % 10 == 0:
@@ -85,6 +90,3 @@ def main():
             pdb.set_trace()
             print("We have reached a perfect solution")
 
-
-if __name__ == "__main__":
-    main()

@@ -114,19 +114,19 @@ def evalArtificialAnt(individual):
     return ant.eaten,  
 
 if __name__ == "__main__":
+    args = sys.argv[1:]
+    output_db = args[0]
+    n_iters = int(args[1])
     with open("./santafe_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
     max_score = 0
     iter = 0
-    for soln in enum.uniform_random_global_search(10000, 20000):
+    for soln in enum.uniform_random_global_search(10000, n_iters):
         iter = iter + 1 
         score = evalArtificialAnt(soln)[0]
+        pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
         if iter % 10 == 0:
             print(score, max_score, iter)
-        if score == 89:
-            pdb.set_trace()
-            print("We have reached a perfect solution")
-        
-    
+
