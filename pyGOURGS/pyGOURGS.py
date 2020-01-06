@@ -14,6 +14,7 @@ import numpy as np
 import random
 import pdb
 import sys
+from sqlitedict import SqliteDict
 
 class InvalidOperatorIndex(Exception):
     pass
@@ -30,7 +31,7 @@ def count_nodes_in_tree(tree):
         tree               
     '''
     n_terminals = tree.count('..')
-    n_operators = tree.count('(')
+    n_operators = tree.count('[')
     n_nodes = n_terminals + n_operators
     return n_nodes
 
@@ -657,7 +658,6 @@ class Enumerator(object):
             weights.append(product)
             Q = Q + product
         weights = np.array(weights)
-        weights = weights / np.sum(weights)
         self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
@@ -753,8 +753,8 @@ class Enumerator(object):
         """
         terminals = self._pset.get_terminals()        
         pset = self._pset    
-        _, cum_weights = self.calculate_Q(N)
-        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+        _, weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), weights=weights)[0]
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         r = random.randint(0, R_i-1)
