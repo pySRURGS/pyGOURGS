@@ -142,7 +142,7 @@ def mempower(a, b):
     result: mpmath.ctx_mp_python.mpf (int)
         `a ** b`
     """
-    result = mpmath.power(a, b)
+    result = int(mpmath.power(a, b))
     return result
 
 class PrimitiveSet(object):
@@ -411,7 +411,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def ith_n_ary_tree(self, i):
         """
         Generates the `i`th n-ary tree.
@@ -452,7 +452,7 @@ class Enumerator(object):
             tree = '[' + ','.join(subtrees) + ']'
         return tree
     
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_l_i_b(self, i, b):
         """
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -494,7 +494,7 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_G_i_b(self, i, b):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -520,7 +520,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_all_G_i_b(self, i):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -540,13 +540,12 @@ class Enumerator(object):
         """
         arities = self._pset.get_arities()
         k = len(arities)
-        R_i = mpmath.mpf(1.0)
         list_G_i_b = list()
         for b in range(0, k):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_R_i(self, i):
         """
         Calculates the number of possible configurations of operators in the 
@@ -566,14 +565,14 @@ class Enumerator(object):
         """
         if i == 0:
             return 1
-        R_i = mpmath.mpf(1.0)
+        R_i = 1.0
         all_G_i_b = self.calculate_all_G_i_b(i)
         for G_i_b in all_G_i_b:            
             if G_i_b != 0:
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_a_i(self, i):
         """
         Calculates the number of terminals in the `i`th tree
@@ -607,7 +606,7 @@ class Enumerator(object):
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_S_i(self, i):
         """
         Calculates the number of possible configurations of terminals in the 
@@ -630,7 +629,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_Q(self, N):
         """
         Calculates the number of total number of solutions in the solution space
@@ -872,11 +871,11 @@ def initialize_db(path_to_db):
                 None, None, np.inf, None, None)
     return
 
-def save_result_to_db(path_to_db, result, input):
+def save_result_to_db(path_to_db, result, input, commit=True):
     '''
         Saves results to the SqliteDict file 
     '''
-    with SqliteDict(path_to_db, autocommit=True) as results_dict:
+    with SqliteDict(path_to_db, autocommit=commit) as results_dict:
         results_dict[input] = result    
 
 if __name__ == '__main__':
