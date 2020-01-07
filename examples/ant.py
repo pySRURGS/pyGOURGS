@@ -127,6 +127,6 @@ if __name__ == "__main__":
         pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
-        if iter % 10 == 0:
+        if iter % 10000 == 0:
             print(score, max_score, iter)
 
