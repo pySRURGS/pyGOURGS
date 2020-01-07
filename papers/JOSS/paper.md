@@ -7,7 +7,7 @@ tags:
   - Random Search
 authors:
   - name: Sohrab Towfighi
-    orcid: https://orcid.org/0000-0002-3050-8943
+    orcid: 0000-0002-3050-8943
     affiliation: 1  
 affiliations:
  - name: University of Toronto, Faculty of Medicine
