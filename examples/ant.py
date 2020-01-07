@@ -117,7 +117,7 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     output_db = args[0]
     n_iters = int(args[1])
-    with open("./santafe_trail.txt") as trail_file:
+    with open("./johnmuir_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
     max_score = 0
     iter = 0
