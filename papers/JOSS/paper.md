@@ -1,3 +1,4 @@
+---
 title: 'pyGOURGS - global optimization of n-ary tree representable problems using uniform random global search'
 tags:
   - Python
@@ -14,7 +15,6 @@ affiliations:
    index: 1
 date: 2 January 2020
 bibliography: paper.bib
-
 ---
 
 # Summary
