@@ -13,7 +13,7 @@ authors:
 affiliations:
  - name: Faculty of Medicine, University of Medicine
    index: 1
-date: 2 January 2019
+date: 2 January 2020
 bibliography: paper.bib
 ---
 
