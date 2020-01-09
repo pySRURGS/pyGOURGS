@@ -1,5 +1,5 @@
 ---
-title: "pyGOURGS - global optimization of n-ary tree representable problems using uniform random global search"
+title: 'pyGOURGS - global optimization of n-ary tree representable problems using uniform random global search'
 tags:
   - Python
   - Global Optimization
@@ -10,10 +10,10 @@ authors:
   - name: Sohrab Towfighi
     orcid: 0000-0002-3050-8943
     affiliation: "1"
-affiliations: University of Toronto, Faculty of Medicine
-- name: 
-  index: 1
-date: January 2nd 2020
+affiliations:
+ - name: Faculty of Medicine, University of Medicine
+   index: 1
+date: 2 January 2019
 bibliography: paper.bib
 ---
 
