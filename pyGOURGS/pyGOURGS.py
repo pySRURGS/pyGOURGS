@@ -761,7 +761,7 @@ class Enumerator(object):
         candidate_solution = self.generate_specified_solution(i, r, s, N)
         return candidate_solution
         
-    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+    def uniform_random_global_search(self, N, num_soln, deterministic=False):
         """
         Yields (this is a generator) a random candidate solutions `num_soln` 
         times.
