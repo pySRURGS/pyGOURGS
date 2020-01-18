@@ -1,3 +1,4 @@
+---
 title: 'pyGOURGS - global optimization of n-ary tree representable problems using uniform random global search'
 tags:
   - Python
@@ -7,14 +8,13 @@ tags:
   - Random Search
 authors:
   - name: Sohrab Towfighi
-    orcid: https://orcid.org/0000-0002-3050-8943
-    affiliation: 1  
+    orcid: 0000-0002-3050-8943
+    affiliation: "1"
 affiliations:
- - name: University of Toronto, Faculty of Medicine
+ - name: Faculty of Medicine, University of Medicine
    index: 1
 date: 2 January 2020
 bibliography: paper.bib
-
 ---
 
 # Summary
@@ -51,7 +51,7 @@ of random search can require differing amounts of computational effort to
 reach a high quality solution. They found that the random search method commonly 
 used to generate the initial population of genetic programming solutions performs 
 much worse than does uniform random search. We found one prominent modern paper 
-which claimed that genetic programming outperformed random search [@Sipper:2019],
+which claimed that genetic programming outperformed random search [@Sipper:2018],
 when in fact they were comparing genetic programming to a biased type of random 
 search which they then put on further unequal footing. This software has broad 
 applicability in the examination of the solution space for global optimization 
