@@ -818,9 +818,9 @@ class Enumerator(object):
             for r in range(0, R_i):
                 for s in range(0, S_i):
                     if max_iters is not None:
-                        iter = iter + 1 
                         if iter > max_iters:
                             return
+                        iter = iter + 1 
                     candidate_solution = self.generate_specified_solution(i,
                                                                     r, s, N)                    
                     yield candidate_solution
