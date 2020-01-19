@@ -87,8 +87,8 @@ toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
 
 ################## END DEAP 
 iter = 0
-N_figs = 10
-for tree in enum.exhaustive_global_search(N, max_iters=N_figs):        
+N_figs = 20
+for tree in enum.exhaustive_global_search(N, max_iters=2*N_figs):        
     treeDEAP = gp.PrimitiveTree.from_string(tree, psetDEAP)
     nodes, edges, labels = gp.graph(treeDEAP)        
     ### Graphviz Section ###
@@ -114,15 +114,19 @@ fig = sg.SVGFigure("2000", "5000")
 dict_figs = {}
 plots = []
 heights = []
-for i in range(0,N_figs):
+for i in range(0,2*N_figs):
     dict_figs[i] = sg.fromfile("tree" + str(i) + ".svg")
     plots.append(dict_figs[i].getroot())
     heights.append(int(dict_figs[i].height[:-2]))
 
 new_height = 0
-for i in range(1,N_figs):
+x_location = 0
+for i in range(1,2*N_figs):
     new_height = np.sum(heights[0:i])
-    plots[i].moveto(0,new_height)
+    if i >= N_figs:
+        x_location = 250
+        new_height = new_height - np.sum(heights[0:N_figs])
+    plots[i].moveto(0+x_location,new_height)
 
 # append plots and labels to figure
 fig.append(plots)
