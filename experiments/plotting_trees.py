@@ -26,9 +26,7 @@ number_of_configs_at_i = []
 trees = []
 counter = 0
 
-
 ################## DEAP 
-
 from deap import algorithms
 from deap import base
 from deap import creator
@@ -82,51 +80,51 @@ toolbox.register("select", tools.selTournament, tournsize=7)
 toolbox.register("mate", gp.cxOnePoint)
 toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
 toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-
-
-
 ################## END DEAP 
+
+
 iter = 0
-N_figs = 20
-for tree in enum.exhaustive_global_search(N, max_iters=2*N_figs):        
+N_figs = 10
+rows = 3
+for tree in enum.exhaustive_global_search(N, max_iters=rows*N_figs):
     treeDEAP = gp.PrimitiveTree.from_string(tree, psetDEAP)
     nodes, edges, labels = gp.graph(treeDEAP)        
-    ### Graphviz Section ###
-    
-
+    ### Graphviz Section ###   
     g = pgv.AGraph()
     g.add_nodes_from(nodes)
     g.add_edges_from(edges)
     g.layout(prog="dot")
-
     for i in nodes:
         n = g.get_node(i)
         n.attr["label"] = labels[i]
-
     g.draw("tree" + str(iter) + ".svg", prog='dot')
     iter = iter + 1
 
 
 #create new SVG figure
 fig = sg.SVGFigure("2000", "5000")
-
 # load matpotlib-generated figures
 dict_figs = {}
 plots = []
-heights = []
-for i in range(0,2*N_figs):
+y_locations = []
+for i in range(0, rows*N_figs):
     dict_figs[i] = sg.fromfile("tree" + str(i) + ".svg")
     plots.append(dict_figs[i].getroot())
-    heights.append(int(dict_figs[i].height[:-2]))
+    y_locations.append(int(dict_figs[i].height[:-2]))
 
-new_height = 0
+y_location = 0
 x_location = 0
-for i in range(1,2*N_figs):
-    new_height = np.sum(heights[0:i])
-    if i >= N_figs:
-        x_location = 250
-        new_height = new_height - np.sum(heights[0:N_figs])
-    plots[i].moveto(0+x_location,new_height)
+prev_row = 0
+start_row_index = 0
+for i in range(1, rows*N_figs):    
+    row = i // N_figs        
+    if prev_row != row:
+        y_location = 0
+        start_row_index = i
+    x_location = 0 + 250*row
+    y_location = np.sum(y_locations[start_row_index:i])
+    plots[i].moveto(0+x_location,y_location)
+    prev_row = row
 
 # append plots and labels to figure
 fig.append(plots)
