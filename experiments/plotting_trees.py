@@ -8,7 +8,7 @@ import pyGOURGS as pg
 import sqlitedict as SqliteDict
 import matplotlib.pyplot as plt
 import pdb
-from nltk import Tree
+
 
 pset = pg.PrimitiveSet()
 pset.add_operator("IF_FOOD", 2)
