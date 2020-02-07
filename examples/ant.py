@@ -9,6 +9,7 @@ from functools import partial
 import sys,os
 sys.path.append(os.path.join('..', 'pyGOURGS'))
 import pyGOURGS as pg
+import argparse 
 
 def progn(*args):
     for arg in args:
@@ -114,9 +115,17 @@ def evalArtificialAnt(individual):
     return ant.eaten,  
 
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    output_db = args[0]
-    n_iters = int(args[1])
+    parser = argparse.ArgumentParser(prog='ant.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
+    parser.add_argument("n_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int)
+    parser.add_argument("frequency_printing", help="An integer specifying how many strategies should be attempted before printing current job status", type=int)
+    if len(sys.argv) < 2:
+        parser.print_usage()
+        sys.exit(1)
+    arguments = parser.parse_args()
+    output_db = arguments.output_db
+    n_iters = arguments.n_iters
+    frequency_printing = arguments.frequency_printing
     with open("./johnmuir_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
     max_score = 0
@@ -127,6 +136,7 @@ if __name__ == "__main__":
         pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
-        if iter % 10000 == 0:
-            print(score, max_score, iter)
+        if iter % frequency_printing == 0:
+            print("best score of this run:" + str(max_score), 
+                  'iteration:'+ str(iter), end='\r')
 
