@@ -910,13 +910,15 @@ class ResultList(object):
     def __init__(self, path_to_db):
         self._results = []
         self._path_to_db = path_to_db
-
+        self.load()
+        self.sort()
+        self.print()
+        
     def load(self):
         """
         Loads a database of solutions into the ResultList
-        """
-        with SqliteDict(path_to_db, autocommit=commit) as results_dict:
-            results_dict[input] = result            
+        """        
+        with SqliteDict(self._path_to_db) as results_dict:
             keys = results_dict.keys()        
             for input in keys:
                 score = results_dict[input]
@@ -928,7 +930,7 @@ class ResultList(object):
         Sorts the results in the result list by decreasing value of mean squared 
         error.
         """
-        self._results = sorted(self._results, key=lambda x: x.score)
+        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
         
     def print(self, top=5, mode='succinct'):
         """
@@ -949,7 +951,7 @@ class ResultList(object):
         table = []
         header = ["Score"]
         for i in range(0, top):
-            row = [self._results[i].input, self._results[i].score]
+            row = [self._results[i]._input, self._results[i]._score]
             table.append(row)
         table_string = tabulate.tabulate(table, headers=header)
         print(table_string)

@@ -133,6 +133,8 @@ In order to generate random solutions, we use the functionality of
 enumeration scheme, making sure that each solution has the same probability of 
 being selected.
 
+After the script is run, the `ResultList` class is used to retrieve the top five 
+search strategies considered from the database file.
 
 Users who wish to try out the completed script can run the bash script and refer 
 to the help.

@@ -141,4 +141,4 @@ if __name__ == "__main__":
         if iter % frequency_printing == 0:
             print("best score of this run:" + str(max_score), 
                   'iteration:'+ str(iter), end='\r')
-
+    pg.ResultList(output_db)
