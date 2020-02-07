@@ -51,7 +51,7 @@ runs against the `johnmuir_trail.txt`. In the `johnmuir` grid
 shown below, `S` denotes the ant's starting position, `#` denotes a piece of bread, and `.` 
 denotes a space without food.
 
-[![John Muir Trail](image/johnmuir.svg)]()
+[![John Muir Trail](image/johnmuir.svg)](image/johnmuir.svg)
 
 The ant takes steps according to the search strategy. The ant is 
 permitted three base operations, 
