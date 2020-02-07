@@ -117,20 +117,22 @@ def evalArtificialAnt(search_strategy_string):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='ant.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
-    parser.add_argument("n_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int)
-    parser.add_argument("frequency_printing", help="An integer specifying how many strategies should be attempted before printing current job status", type=int)
+    parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
+    parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
+    parser.add_argument("-freq_print", help="An integer specifying how many strategies should be attempted before printing current job status", type=int, default=10)
     if len(sys.argv) < 2:
         parser.print_usage()
         sys.exit(1)
     arguments = parser.parse_args()
     output_db = arguments.output_db
-    n_iters = arguments.n_iters
-    frequency_printing = arguments.frequency_printing
+    n_iters = arguments.num_iters
+    maximum_tree_complexity_index = arguments.num_trees
+    frequency_printing = arguments.freq_print
     with open("./johnmuir_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
     max_score = 0
     iter = 0
-    for soln in enum.uniform_random_global_search(10000, n_iters):
+    for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, n_iters):
         iter = iter + 1 
         score = evalArtificialAnt(soln)
         pg.save_result_to_db(output_db, score, soln)

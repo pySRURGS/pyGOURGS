@@ -98,7 +98,7 @@ pset.add_variable("ant.turn_right()")
 ```
 
 In the context of the artificial ant problem, as described by Koza (1992), `MOVE`,
-`LEFT` and `RIGHT` were terminals, and not functions. In our programming setup, 
+`LEFT` and `RIGHT` were terminals, and not operators. In our programming setup, 
 these actions are coded as functions with zero arguments. In keeping with the 
 original problem specification and since pyGOURGS is not designed to handle 
 operators of zero arguments, we simply take these functions and treat them as 
@@ -125,6 +125,37 @@ def evalArtificialAnt(search_strategy_string):
     ant.run(routine)
     return ant.eaten
 ```    
+
+
+Users who wish to try out the completed script can run the bash script and refer 
+to the help.
+
+```
+$ winpty python ant.py -h
+usage: ant.py [-h] [-num_trees NUM_TREES] [-num_iters NUM_ITERS]
+              [-freq_print FREQ_PRINT]
+              output_db
+
+positional arguments:
+  output_db             An absolute filepath where we save results to a SQLite
+                        database. Include the filename. Extension is typically
+                        '.db'
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -num_trees NUM_TREES  pyGOURGS iterates through all the possible trees using
+                        an enumeration scheme. This argument specifies the
+                        number of trees to which we restrict our search.
+                        (default: 10000)
+  -num_iters NUM_ITERS  An integer specifying the number of search strategies
+                        to be attempted in this run (default: 1000)
+  -freq_print FREQ_PRINT
+                        An integer specifying how many strategies should be
+                        attempted before printing current job status (default:
+                        10)
+
+```
+
 
 ## API
 
