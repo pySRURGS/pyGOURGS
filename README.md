@@ -66,10 +66,50 @@ executed. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD.
 - The PROGN3 function similarly takes three arguments and performs them in order. 
 - The IF_FOOD_AHEAD function takes two arguments, performing the first if food is ahead and the latter if food is not ahead of the ant. 
 
-Each base operation takes one unit of time to perform. In the included example, the simulation stops running after 
-600 time units.
+Each base operation takes one unit of time to perform. In the included example, 
+the simulation stops running after 600 time units.
 
-In the `examples/ant.py` file, we run a search for the ideal search strategy using uniform random global search.
+In the `examples/ant.py` file, we run a search for the ideal search strategy 
+using uniform random global search. For the following sections, we refer to code
+from the `examples/ant.py` file. 
+
+
+We begin by instantiating an AntSimulator, each simulation of which we will let 
+run for 600 time steps.
+```    
+ant = AntSimulator(600)
+```
+
+We then define the primitives to be used in this problem. The primitives are 
+described in terms of n-ary trees. Primitives that are housed in the terminal 
+nodes of the tree are dubbed `terminals` (or variables) and primitives that are 
+housed in non-terminal nodes are `operators`. pyGOURGS needs to know the number of 
+arguments each operator takes, this value is known as the `arity`. This is the 
+second argument supplied to `add_operator`.
+
+```
+pset = pg.PrimitiveSet()
+pset.add_operator("ant.if_food_ahead", 2)
+pset.add_operator("prog2", 2)
+pset.add_operator("prog3", 3)
+pset.add_variable("ant.move_forward()")
+pset.add_variable("ant.turn_left()")
+pset.add_variable("ant.turn_right()")
+```
+
+In the context of the artificial ant problem, as described by Koza (1992), `MOVE`,
+`LEFT` and `RIGHT` were terminals, and not functions. In our programming setup, 
+these actions are coded as functions with zero arguments. In keeping with the 
+original problem specification and since pyGOURGS is not designed to handle 
+operators of zero arguments, we simply take these functions and treat them as 
+terminals by including the '()' when defining them.
+
+We then instantiate a `pyGOURGS.Enumerator` using the primitive set. The 
+enumerator uses the primitives we have defined as a basis for its tree 
+enumeration.
+```
+enum = pg.Enumerator(pset)
+```
 
 ## API
 
