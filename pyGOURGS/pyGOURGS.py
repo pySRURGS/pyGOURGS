@@ -15,6 +15,7 @@ import random
 import pdb
 import sys
 from sqlitedict import SqliteDict
+import tabulate
 
 class InvalidOperatorIndex(Exception):
     pass
@@ -879,12 +880,80 @@ def save_result_to_db(path_to_db, result, input, commit=True):
         results_dict[input] = result    
 
 def check_in_db(path_to_db, input):
+    '''
+        Checks whether a key already exists in the database
+    '''
     with SqliteDict(path_to_db) as results_dict:
         try:
             results_dict[input]
             return True
         except KeyError:
             return False
+
+class Result(object):
+    """
+    A class to hold a single candidate solution and its performance
+    """
+    def __init__(self, input, score):
+        self._input = input
+        self._score = score
+
+class ResultList(object):
+    """
+    A class to load all results from a pyGOURGS generated database. 
+
+    Returns
+    -------
+    self: ResultList
+    """
+    
+    def __init__(self, path_to_db):
+        self._results = []
+        self._path_to_db = path_to_db
+
+    def load(self):
+        """
+        Loads a database of solutions into the ResultList
+        """
+        with SqliteDict(path_to_db, autocommit=commit) as results_dict:
+            results_dict[input] = result            
+            keys = results_dict.keys()        
+            for input in keys:
+                score = results_dict[input]
+                my_result = Result(input, score)
+                self._results.append(my_result)    
+    
+    def sort(self):
+        """
+        Sorts the results in the result list by decreasing value of mean squared 
+        error.
+        """
+        self._results = sorted(self._results, key=lambda x: x.score)
+        
+    def print(self, top=5, mode='succinct'):
+        """
+        Prints the score for the top results in the database. Run `self.sort` prior 
+        to executing `self.print`.
+        
+        Parameters
+        ----------
+                
+        top: int 
+            The number of results to display. Will be the best models if 
+            `self.sort` has been run prior to printing.
+                        
+        Returns
+        -------
+        table_string: string
+        """
+        table = []
+        header = ["Score"]
+        for i in range(0, top):
+            row = [self._results[i].input, self._results[i].score]
+            table.append(row)
+        table_string = tabulate.tabulate(table, headers=header)
+        print(table_string)
+
         
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
