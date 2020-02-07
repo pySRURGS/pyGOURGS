@@ -69,6 +69,8 @@ permitted. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD.
 Each base operation takes one unit of time to perform. In the included example, the simulation stops running after 
 600 time units.
 
+In the `examples/ant.py` file, we run a search for the ideal search strategy using uniform random global search.
+
 ## API
 
 [Documentation](https://pysrurgs.github.io/pyGOURGS/)
