@@ -127,6 +127,12 @@ def evalArtificialAnt(search_strategy_string):
 ```    
 
 
+In order to generate random solutions, we use the functionality of 
+`enum.uniform_random_global_search`, which picks at random a solution from the 
+enumeration scheme, making sure that each solution has the same probability of 
+being selected.
+
+
 Users who wish to try out the completed script can run the bash script and refer 
 to the help.
 
