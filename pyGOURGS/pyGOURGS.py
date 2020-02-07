@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 pyGOURGS - Global Optimization by Uniform Random Global Search;
-Sohrab Towfighi (C) 2019;
+Sohrab Towfighi (C) 2020;
 Licence: GPL 3.0;
 https://github.com/pySRURGS/pyGOURGS
 '''
