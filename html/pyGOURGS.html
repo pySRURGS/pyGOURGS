@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.2" />
+<meta name="generator" content="pdoc 0.7.4" />
 <title>pyGOURGS API documentation</title>
 <meta name="description" content="pyGOURGS - Global Optimization by Uniform Random Global Search;
 Sohrab Towfighi (C) 2019;
@@ -48,6 +48,8 @@ import numpy as np
 import random
 import pdb
 import sys
+from sqlitedict import SqliteDict
+import tabulate
 
 class InvalidOperatorIndex(Exception):
     pass
@@ -64,7 +66,7 @@ def count_nodes_in_tree(tree):
         tree               
     &#39;&#39;&#39;
     n_terminals = tree.count(&#39;..&#39;)
-    n_operators = tree.count(&#39;(&#39;)
+    n_operators = tree.count(&#39;[&#39;)
     n_nodes = n_terminals + n_operators
     return n_nodes
 
@@ -175,7 +177,7 @@ def mempower(a, b):
     result: mpmath.ctx_mp_python.mpf (int)
         `a ** b`
     &#34;&#34;&#34;
-    result = mpmath.power(a, b)
+    result = int(mpmath.power(a, b))
     return result
 
 class PrimitiveSet(object):
@@ -444,7 +446,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -485,7 +487,7 @@ class Enumerator(object):
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
     
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -527,7 +529,7 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -553,7 +555,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -573,13 +575,12 @@ class Enumerator(object):
         &#34;&#34;&#34;
         arities = self._pset.get_arities()
         k = len(arities)
-        R_i = mpmath.mpf(1.0)
         list_G_i_b = list()
         for b in range(0, k):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -599,14 +600,14 @@ class Enumerator(object):
         &#34;&#34;&#34;
         if i == 0:
             return 1
-        R_i = mpmath.mpf(1.0)
+        R_i = 1.0
         all_G_i_b = self.calculate_all_G_i_b(i)
         for G_i_b in all_G_i_b:            
             if G_i_b != 0:
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -640,7 +641,7 @@ class Enumerator(object):
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -663,7 +664,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -691,7 +692,6 @@ class Enumerator(object):
             weights.append(product)
             Q = Q + product
         weights = np.array(weights)
-        weights = weights / np.sum(weights)
         self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
@@ -787,8 +787,8 @@ class Enumerator(object):
         &#34;&#34;&#34;
         terminals = self._pset.get_terminals()        
         pset = self._pset    
-        _, cum_weights = self.calculate_Q(N)
-        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+        _, weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), weights=weights)[0]
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         r = random.randint(0, R_i-1)
@@ -796,7 +796,7 @@ class Enumerator(object):
         candidate_solution = self.generate_specified_solution(i, r, s, N)
         return candidate_solution
         
-    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+    def uniform_random_global_search(self, N, num_soln, deterministic=False):
         &#34;&#34;&#34;
         Yields (this is a generator) a random candidate solutions `num_soln` 
         times.
@@ -853,9 +853,9 @@ class Enumerator(object):
             for r in range(0, R_i):
                 for s in range(0, S_i):
                     if max_iters is not None:
-                        iter = iter + 1 
                         if iter &gt; max_iters:
                             return
+                        iter = iter + 1 
                     candidate_solution = self.generate_specified_solution(i,
                                                                     r, s, N)                    
                     yield candidate_solution
@@ -877,6 +877,11 @@ def compile(expr, pset):
     -------
         a function if the primitive set has 1 or more arguments,
          or return the results produced by evaluating the tree
+     
+    Note
+    ----
+    This function needs to be copied into the scope of the script where the 
+    problem is defined. 
     &#34;&#34;&#34;    
     code = str(expr)
     if len(pset._variables) &gt; 0:
@@ -888,6 +893,104 @@ def compile(expr, pset):
         _, _, traceback = sys.exc_info()
         raise MemoryError(&#34;Tree is too long.&#34;, traceback)
 
+def initialize_db(path_to_db):
+    &#39;&#39;&#39;
+        Initializes the SqliteDict database file with an initial null value
+        for the &#39;best_result&#39; key
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db, autocommit=True) as results_dict:
+        try:
+            results_dict[&#39;best_result&#39;]
+        except KeyError:
+            results_dict[&#39;best_result&#39;] = Result(
+                None, None, np.inf, None, None)
+    return
+
+def save_result_to_db(path_to_db, result, input, commit=True):
+    &#39;&#39;&#39;
+        Saves results to the SqliteDict file 
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db, autocommit=commit) as results_dict:
+        results_dict[input] = result    
+
+def check_in_db(path_to_db, input):
+    &#39;&#39;&#39;
+        Checks whether a key already exists in the database
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db) as results_dict:
+        try:
+            results_dict[input]
+            return True
+        except KeyError:
+            return False
+
+class Result(object):
+    &#34;&#34;&#34;
+    A class to hold a single candidate solution and its performance
+    &#34;&#34;&#34;
+    def __init__(self, input, score):
+        self._input = input
+        self._score = score
+
+class ResultList(object):
+    &#34;&#34;&#34;
+    A class to load all results from a pyGOURGS generated database. 
+
+    Returns
+    -------
+    self: ResultList
+    &#34;&#34;&#34;
+    
+    def __init__(self, path_to_db):
+        self._results = []
+        self._path_to_db = path_to_db
+        self.load()
+        self.sort()
+        self.print()
+        
+    def load(self):
+        &#34;&#34;&#34;
+        Loads a database of solutions into the ResultList
+        &#34;&#34;&#34;        
+        with SqliteDict(self._path_to_db) as results_dict:
+            keys = results_dict.keys()        
+            for input in keys:
+                score = results_dict[input]
+                my_result = Result(input, score)
+                self._results.append(my_result)    
+    
+    def sort(self):
+        &#34;&#34;&#34;
+        Sorts the results in the result list by decreasing value of mean squared 
+        error.
+        &#34;&#34;&#34;
+        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+        
+    def print(self, top=5, mode=&#39;succinct&#39;):
+        &#34;&#34;&#34;
+        Prints the score for the top results in the database. Run `self.sort` prior 
+        to executing `self.print`.
+        
+        Parameters
+        ----------
+                
+        top: int 
+            The number of results to display. Will be the best models if 
+            `self.sort` has been run prior to printing.
+                        
+        Returns
+        -------
+        table_string: string
+        &#34;&#34;&#34;
+        table = []
+        header = [&#34;Score&#34;]
+        for i in range(0, top):
+            row = [self._results[i]._input, self._results[i]._score]
+            table.append(row)
+        table_string = tabulate.tabulate(table, headers=header)
+        print(table_string)
+
+        
 if __name__ == &#39;__main__&#39;:
     from operator import add, sub, mul, truediv
     pset = PrimitiveSet()
@@ -983,6 +1086,27 @@ if __name__ == &#39;__main__&#39;:
     return result    </code></pre>
 </details>
 </dd>
+<dt id="pyGOURGS.check_in_db"><code class="name flex">
+<span>def <span class="ident">check_in_db</span></span>(<span>path_to_db, input)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Checks whether a key already exists in the database</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_in_db(path_to_db, input):
+    &#39;&#39;&#39;
+        Checks whether a key already exists in the database
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db) as results_dict:
+        try:
+            results_dict[input]
+            return True
+        except KeyError:
+            return False</code></pre>
+</details>
+</dd>
 <dt id="pyGOURGS.compile"><code class="name flex">
 <span>def <span class="ident">compile</span></span>(<span>expr, pset)</span>
 </code></dt>
@@ -999,7 +1123,10 @@ expression.</dd>
 <h2 id="returns">Returns</h2>
 <pre><code>a function if the primitive set has 1 or more arguments,
  or return the results produced by evaluating the tree
-</code></pre></section>
+</code></pre>
+<h2 id="note">Note</h2>
+<p>This function needs to be copied into the scope of the script where the
+problem is defined.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1021,6 +1148,11 @@ expression.</dd>
     -------
         a function if the primitive set has 1 or more arguments,
          or return the results produced by evaluating the tree
+     
+    Note
+    ----
+    This function needs to be copied into the scope of the script where the 
+    problem is defined. 
     &#34;&#34;&#34;    
     code = str(expr)
     if len(pset._variables) &gt; 0:
@@ -1049,7 +1181,7 @@ tree</p></section>
         tree               
     &#39;&#39;&#39;
     n_terminals = tree.count(&#39;..&#39;)
-    n_operators = tree.count(&#39;(&#39;)
+    n_operators = tree.count(&#39;[&#39;)
     n_nodes = n_terminals + n_operators
     return n_nodes</code></pre>
 </details>
@@ -1297,6 +1429,30 @@ to take the cartesian product with itself.</dd>
     return ith_item</code></pre>
 </details>
 </dd>
+<dt id="pyGOURGS.initialize_db"><code class="name flex">
+<span>def <span class="ident">initialize_db</span></span>(<span>path_to_db)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Initializes the SqliteDict database file with an initial null value
+for the 'best_result' key</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initialize_db(path_to_db):
+    &#39;&#39;&#39;
+        Initializes the SqliteDict database file with an initial null value
+        for the &#39;best_result&#39; key
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db, autocommit=True) as results_dict:
+        try:
+            results_dict[&#39;best_result&#39;]
+        except KeyError:
+            results_dict[&#39;best_result&#39;] = Result(
+                None, None, np.inf, None, None)
+    return</code></pre>
+</details>
+</dd>
 <dt id="pyGOURGS.mempower"><code class="name flex">
 <span>def <span class="ident">mempower</span></span>(<span>a, b)</span>
 </code></dt>
@@ -1332,7 +1488,7 @@ to take the cartesian product with itself.</dd>
     result: mpmath.ctx_mp_python.mpf (int)
         `a ** b`
     &#34;&#34;&#34;
-    result = mpmath.power(a, b)
+    result = int(mpmath.power(a, b))
     return result</code></pre>
 </details>
 </dd>
@@ -1357,6 +1513,23 @@ to take the cartesian product with itself.</dd>
             except Exception as e:
                 grid[i][j] = -1
     print(grid)</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.save_result_to_db"><code class="name flex">
+<span>def <span class="ident">save_result_to_db</span></span>(<span>path_to_db, result, input, commit=True)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Saves results to the SqliteDict file</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_result_to_db(path_to_db, result, input, commit=True):
+    &#39;&#39;&#39;
+        Saves results to the SqliteDict file 
+    &#39;&#39;&#39;
+    with SqliteDict(path_to_db, autocommit=commit) as results_dict:
+        results_dict[input] = result    </code></pre>
 </details>
 </dd>
 </dl>
@@ -1389,7 +1562,7 @@ to take the cartesian product with itself.</dd>
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -1430,7 +1603,7 @@ to take the cartesian product with itself.</dd>
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
     
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -1472,7 +1645,7 @@ to take the cartesian product with itself.</dd>
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -1498,7 +1671,7 @@ to take the cartesian product with itself.</dd>
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -1518,13 +1691,12 @@ to take the cartesian product with itself.</dd>
         &#34;&#34;&#34;
         arities = self._pset.get_arities()
         k = len(arities)
-        R_i = mpmath.mpf(1.0)
         list_G_i_b = list()
         for b in range(0, k):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -1544,14 +1716,14 @@ to take the cartesian product with itself.</dd>
         &#34;&#34;&#34;
         if i == 0:
             return 1
-        R_i = mpmath.mpf(1.0)
+        R_i = 1.0
         all_G_i_b = self.calculate_all_G_i_b(i)
         for G_i_b in all_G_i_b:            
             if G_i_b != 0:
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -1585,7 +1757,7 @@ to take the cartesian product with itself.</dd>
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -1608,7 +1780,7 @@ to take the cartesian product with itself.</dd>
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=128)
+    @mt_lru_cache(maxsize=1248)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -1636,7 +1808,6 @@ to take the cartesian product with itself.</dd>
             weights.append(product)
             Q = Q + product
         weights = np.array(weights)
-        weights = weights / np.sum(weights)
         self._results_for_calculate_Q[N] = (Q, weights)
         return Q, weights
 
@@ -1732,8 +1903,8 @@ to take the cartesian product with itself.</dd>
         &#34;&#34;&#34;
         terminals = self._pset.get_terminals()        
         pset = self._pset    
-        _, cum_weights = self.calculate_Q(N)
-        i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+        _, weights = self.calculate_Q(N)
+        i = random.choices(range(0,N), weights=weights)[0]
         R_i = self.calculate_R_i(i)
         S_i = self.calculate_S_i(i)
         r = random.randint(0, R_i-1)
@@ -1741,7 +1912,7 @@ to take the cartesian product with itself.</dd>
         candidate_solution = self.generate_specified_solution(i, r, s, N)
         return candidate_solution
         
-    def uniform_random_global_search(self, N, num_soln, deterministic=True):
+    def uniform_random_global_search(self, N, num_soln, deterministic=False):
         &#34;&#34;&#34;
         Yields (this is a generator) a random candidate solutions `num_soln` 
         times.
@@ -1798,9 +1969,9 @@ to take the cartesian product with itself.</dd>
             for r in range(0, R_i):
                 for s in range(0, S_i):
                     if max_iters is not None:
-                        iter = iter + 1 
                         if iter &gt; max_iters:
                             return
+                        iter = iter + 1 
                     candidate_solution = self.generate_specified_solution(i,
                                                                     r, s, N)                    
                     yield candidate_solution</code></pre>
@@ -1848,7 +2019,7 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_G_i_b(self, i, b):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
@@ -1894,7 +2065,7 @@ def calculate_G_i_b(self, i, b):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_Q(self, N):
     &#34;&#34;&#34;
     Calculates the number of total number of solutions in the solution space
@@ -1922,7 +2093,6 @@ def calculate_Q(self, N):
         weights.append(product)
         Q = Q + product
     weights = np.array(weights)
-    weights = weights / np.sum(weights)
     self._results_for_calculate_Q[N] = (Q, weights)
     return Q, weights</code></pre>
 </details>
@@ -1949,7 +2119,7 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_R_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators in the 
@@ -1969,7 +2139,7 @@ def calculate_R_i(self, i):
     &#34;&#34;&#34;
     if i == 0:
         return 1
-    R_i = mpmath.mpf(1.0)
+    R_i = 1.0
     all_G_i_b = self.calculate_all_G_i_b(i)
     for G_i_b in all_G_i_b:            
         if G_i_b != 0:
@@ -1999,7 +2169,7 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_S_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of terminals in the 
@@ -2043,7 +2213,7 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_a_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of terminals in the `i`th tree
@@ -2100,7 +2270,7 @@ of arity <code>arities</code>[b]</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_all_G_i_b(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
@@ -2120,7 +2290,6 @@ def calculate_all_G_i_b(self, i):
     &#34;&#34;&#34;
     arities = self._pset.get_arities()
     k = len(arities)
-    R_i = mpmath.mpf(1.0)
     list_G_i_b = list()
     for b in range(0, k):
         list_G_i_b.append(self.calculate_G_i_b(i, b))
@@ -2150,7 +2319,7 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def calculate_l_i_b(self, i, b):
     &#34;&#34;&#34;
     Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -2245,9 +2414,9 @@ overrule <code>N</code> in terms of cutting off the run.</dd>
         for r in range(0, R_i):
             for s in range(0, S_i):
                 if max_iters is not None:
-                    iter = iter + 1 
                     if iter &gt; max_iters:
                         return
+                    iter = iter + 1 
                 candidate_solution = self.generate_specified_solution(i,
                                                                 r, s, N)                    
                 yield candidate_solution</code></pre>
@@ -2381,7 +2550,7 @@ define an operator.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=128)
+<pre><code class="python">@mt_lru_cache(maxsize=1248)
 def ith_n_ary_tree(self, i):
     &#34;&#34;&#34;
     Generates the `i`th n-ary tree.
@@ -2424,7 +2593,7 @@ def ith_n_ary_tree(self, i):
 </details>
 </dd>
 <dt id="pyGOURGS.Enumerator.uniform_random_global_search"><code class="name flex">
-<span>def <span class="ident">uniform_random_global_search</span></span>(<span>self, N, num_soln, deterministic=True)</span>
+<span>def <span class="ident">uniform_random_global_search</span></span>(<span>self, N, num_soln, deterministic=False)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Yields (this is a generator) a random candidate solutions <code>num_soln</code>
@@ -2449,7 +2618,7 @@ random behaviour.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def uniform_random_global_search(self, N, num_soln, deterministic=True):
+<pre><code class="python">def uniform_random_global_search(self, N, num_soln, deterministic=False):
     &#34;&#34;&#34;
     Yields (this is a generator) a random candidate solutions `num_soln` 
     times.
@@ -2515,8 +2684,8 @@ random behaviour.</dd>
     &#34;&#34;&#34;
     terminals = self._pset.get_terminals()        
     pset = self._pset    
-    _, cum_weights = self.calculate_Q(N)
-    i = random.choices(range(0,N), cum_weights=cum_weights)[0]
+    _, weights = self.calculate_Q(N)
+    i = random.choices(range(0,N), weights=weights)[0]
     R_i = self.calculate_R_i(i)
     S_i = self.calculate_S_i(i)
     r = random.randint(0, R_i-1)
@@ -2529,7 +2698,7 @@ random behaviour.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidOperatorIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidOperatorIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -2548,7 +2717,7 @@ random behaviour.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidTerminalIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidTerminalIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -2567,7 +2736,7 @@ random behaviour.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidTreeIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidTreeIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -2992,6 +3161,187 @@ but will eventually be evaluated to whatever results from
 </dd>
 </dl>
 </dd>
+<dt id="pyGOURGS.Result"><code class="flex name class">
+<span>class <span class="ident">Result</span></span>
+<span>(</span><span>input, score)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A class to hold a single candidate solution and its performance</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Result(object):
+    &#34;&#34;&#34;
+    A class to hold a single candidate solution and its performance
+    &#34;&#34;&#34;
+    def __init__(self, input, score):
+        self._input = input
+        self._score = score</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.ResultList"><code class="flex name class">
+<span>class <span class="ident">ResultList</span></span>
+<span>(</span><span>path_to_db)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A class to load all results from a pyGOURGS generated database. </p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<a title="pyGOURGS.ResultList" href="#pyGOURGS.ResultList"><code>ResultList</code></a></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ResultList(object):
+    &#34;&#34;&#34;
+    A class to load all results from a pyGOURGS generated database. 
+
+    Returns
+    -------
+    self: ResultList
+    &#34;&#34;&#34;
+    
+    def __init__(self, path_to_db):
+        self._results = []
+        self._path_to_db = path_to_db
+        self.load()
+        self.sort()
+        self.print()
+        
+    def load(self):
+        &#34;&#34;&#34;
+        Loads a database of solutions into the ResultList
+        &#34;&#34;&#34;        
+        with SqliteDict(self._path_to_db) as results_dict:
+            keys = results_dict.keys()        
+            for input in keys:
+                score = results_dict[input]
+                my_result = Result(input, score)
+                self._results.append(my_result)    
+    
+    def sort(self):
+        &#34;&#34;&#34;
+        Sorts the results in the result list by decreasing value of mean squared 
+        error.
+        &#34;&#34;&#34;
+        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+        
+    def print(self, top=5, mode=&#39;succinct&#39;):
+        &#34;&#34;&#34;
+        Prints the score for the top results in the database. Run `self.sort` prior 
+        to executing `self.print`.
+        
+        Parameters
+        ----------
+                
+        top: int 
+            The number of results to display. Will be the best models if 
+            `self.sort` has been run prior to printing.
+                        
+        Returns
+        -------
+        table_string: string
+        &#34;&#34;&#34;
+        table = []
+        header = [&#34;Score&#34;]
+        for i in range(0, top):
+            row = [self._results[i]._input, self._results[i]._score]
+            table.append(row)
+        table_string = tabulate.tabulate(table, headers=header)
+        print(table_string)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyGOURGS.ResultList.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Loads a database of solutions into the ResultList</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load(self):
+    &#34;&#34;&#34;
+    Loads a database of solutions into the ResultList
+    &#34;&#34;&#34;        
+    with SqliteDict(self._path_to_db) as results_dict:
+        keys = results_dict.keys()        
+        for input in keys:
+            score = results_dict[input]
+            my_result = Result(input, score)
+            self._results.append(my_result)    </code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.ResultList.print"><code class="name flex">
+<span>def <span class="ident">print</span></span>(<span>self, top=5, mode='succinct')</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Prints the score for the top results in the database. Run <code>self.sort</code> prior
+to executing <code>self.print</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>top</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of results to display. Will be the best models if
+<code>self.sort</code> has been run prior to printing.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>table_string</code></strong> :&ensp;<code>string</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print(self, top=5, mode=&#39;succinct&#39;):
+    &#34;&#34;&#34;
+    Prints the score for the top results in the database. Run `self.sort` prior 
+    to executing `self.print`.
+    
+    Parameters
+    ----------
+            
+    top: int 
+        The number of results to display. Will be the best models if 
+        `self.sort` has been run prior to printing.
+                    
+    Returns
+    -------
+    table_string: string
+    &#34;&#34;&#34;
+    table = []
+    header = [&#34;Score&#34;]
+    for i in range(0, top):
+        row = [self._results[i]._input, self._results[i]._score]
+        table.append(row)
+    table_string = tabulate.tabulate(table, headers=header)
+    print(table_string)</code></pre>
+</details>
+</dd>
+<dt id="pyGOURGS.ResultList.sort"><code class="name flex">
+<span>def <span class="ident">sort</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sorts the results in the result list by decreasing value of mean squared
+error.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort(self):
+    &#34;&#34;&#34;
+    Sorts the results in the result list by decreasing value of mean squared 
+    error.
+    &#34;&#34;&#34;
+    self._results = sorted(self._results, key=lambda x: x._score, reverse=True)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -3009,14 +3359,17 @@ but will eventually be evaluated to whatever results from
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyGOURGS.base_m_to_decimal" href="#pyGOURGS.base_m_to_decimal">base_m_to_decimal</a></code></li>
+<li><code><a title="pyGOURGS.check_in_db" href="#pyGOURGS.check_in_db">check_in_db</a></code></li>
 <li><code><a title="pyGOURGS.compile" href="#pyGOURGS.compile">compile</a></code></li>
 <li><code><a title="pyGOURGS.count_nodes_in_tree" href="#pyGOURGS.count_nodes_in_tree">count_nodes_in_tree</a></code></li>
 <li><code><a title="pyGOURGS.decimal_to_base_m" href="#pyGOURGS.decimal_to_base_m">decimal_to_base_m</a></code></li>
 <li><code><a title="pyGOURGS.deinterleave" href="#pyGOURGS.deinterleave">deinterleave</a></code></li>
 <li><code><a title="pyGOURGS.get_arity_of_term" href="#pyGOURGS.get_arity_of_term">get_arity_of_term</a></code></li>
 <li><code><a title="pyGOURGS.get_element_of_cartesian_product" href="#pyGOURGS.get_element_of_cartesian_product">get_element_of_cartesian_product</a></code></li>
+<li><code><a title="pyGOURGS.initialize_db" href="#pyGOURGS.initialize_db">initialize_db</a></code></li>
 <li><code><a title="pyGOURGS.mempower" href="#pyGOURGS.mempower">mempower</a></code></li>
 <li><code><a title="pyGOURGS.print_grid" href="#pyGOURGS.print_grid">print_grid</a></code></li>
+<li><code><a title="pyGOURGS.save_result_to_db" href="#pyGOURGS.save_result_to_db">save_result_to_db</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -3059,13 +3412,24 @@ but will eventually be evaluated to whatever results from
 <li><code><a title="pyGOURGS.PrimitiveSet.get_terminals" href="#pyGOURGS.PrimitiveSet.get_terminals">get_terminals</a></code></li>
 </ul>
 </li>
+<li>
+<h4><code><a title="pyGOURGS.Result" href="#pyGOURGS.Result">Result</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyGOURGS.ResultList" href="#pyGOURGS.ResultList">ResultList</a></code></h4>
+<ul class="">
+<li><code><a title="pyGOURGS.ResultList.load" href="#pyGOURGS.ResultList.load">load</a></code></li>
+<li><code><a title="pyGOURGS.ResultList.print" href="#pyGOURGS.ResultList.print">print</a></code></li>
+<li><code><a title="pyGOURGS.ResultList.sort" href="#pyGOURGS.ResultList.sort">sort</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.4</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>
