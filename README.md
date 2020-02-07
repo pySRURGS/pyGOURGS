@@ -60,8 +60,8 @@ permitted three base operations,
 2. turn LEFT and 
 3. turn RIGHT
 
-The search strategy is has functions which define the order in which these base operations are 
-permitted. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD. 
+The search strategy has functions which define the order in which these base operations are 
+executed. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD. 
 - The PROGN2 function takes two arguments and performs them in order. 
 - The PROGN3 function similarly takes three arguments and performs them in order. 
 - The IF_FOOD_AHEAD function takes two arguments, performing the first if food is ahead and the latter if food is not ahead of the ant. 
