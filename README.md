@@ -45,6 +45,7 @@ pip install -r requirements.txt --user
 
 The artificial ant problem is one in which we identify a search strategy for an ant searching 
 for breadcrumbs to eat. The crumbs are distributed in a path within a 32 x 32 grid. 
+The better the solution, the more pieces of food are eaten by the end of the simulation.
 Included in our `/examples/` folder, there are three maps, the `johnmuir_trail.txt`, 
 `losaltoshills_trail.txt`, and the `santafe_trail.txt`. By default, the example in `examples/ant.py` 
 runs against the `johnmuir_trail.txt`. In the `johnmuir` grid 
