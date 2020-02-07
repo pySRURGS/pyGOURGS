@@ -878,6 +878,14 @@ def save_result_to_db(path_to_db, result, input, commit=True):
     with SqliteDict(path_to_db, autocommit=commit) as results_dict:
         results_dict[input] = result    
 
+def check_in_db(path_to_db, input):
+    with SqliteDict(path_to_db) as results_dict:
+        try:
+            results_dict[input]
+            return True
+        except KeyError:
+            return False
+        
 if __name__ == '__main__':
     from operator import add, sub, mul, truediv
     pset = PrimitiveSet()

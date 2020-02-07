@@ -134,11 +134,12 @@ if __name__ == "__main__":
     iter = 0
     for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, n_iters):
         iter = iter + 1 
-        score = evalArtificialAnt(soln)
-        pg.save_result_to_db(output_db, score, soln)
-        if score > max_score:
-            max_score = score
-        if iter % frequency_printing == 0:
-            print("best score of this run:" + str(max_score), 
-                  'iteration:'+ str(iter), end='\r')
+        if pg.check_in_db(output_db, soln) == False:
+            score = evalArtificialAnt(soln)
+            pg.save_result_to_db(output_db, score, soln)
+            if score > max_score:
+                max_score = score
+            if iter % frequency_printing == 0:
+                print("best score of this run:" + str(max_score), 
+                      'iteration:'+ str(iter), end='\r')
 
