@@ -61,9 +61,9 @@ permitted. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD.
 Each base operation takes one unit of time to perform. In the included example, the simulation stops running after 
 600 time units.
 
-Included in our `/examples/` folder, there are three maps, the johnmuir_trail.txt, 
-losaltoshills_trail.txt, and the santafe_trail.txt. By default, the example in `examples/ant.py` 
-runs against the johnmuir_trail.txt. 
+Included in our `/examples/` folder, there are three maps, the `johnmuir_trail.txt`, 
+`losaltoshills_trail.txt`, and the `santafe_trail.txt`. By default, the example in `examples/ant.py` 
+runs against the `johnmuir_trail.txt`. 
 
 ## API
 
