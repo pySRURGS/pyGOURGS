@@ -11,7 +11,7 @@ authors:
     orcid: 0000-0002-3050-8943
     affiliation: "1"
 affiliations:
- - name: Faculty of Medicine, University of Medicine
+ - name: Faculty of Medicine, University of Toronto
    index: 1
 date: 2 January 2020
 bibliography: paper.bib
