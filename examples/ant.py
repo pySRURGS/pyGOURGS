@@ -112,7 +112,7 @@ def evalArtificialAnt(individual):
     routine = eval('lambda : ' + individual)
     # Run the generated routine
     ant.run(routine)
-    return ant.eaten,  
+    return ant.eaten
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='ant.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     iter = 0
     for soln in enum.uniform_random_global_search(10000, n_iters):
         iter = iter + 1 
-        score = evalArtificialAnt(soln)[0]
+        score = evalArtificialAnt(soln)
         pg.save_result_to_db(output_db, score, soln)
         if score > max_score:
             max_score = score
