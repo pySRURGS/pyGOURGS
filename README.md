@@ -44,15 +44,21 @@ pip install -r requirements.txt --user
 ### An Example: The Artificial Ant Problem
 
 The artificial ant problem is one in which we identify a search strategy for an ant sea. rching 
-for breadcrumbs to eat. The crumbs are distributed in a path within a 32 x 32 grid. The ant is 
-permitted three base operations, MOVE forward, turn LEFT, and turn RIGHT. The ant starts at the 
-top left of the grid, and takes steps according to the search strategy. The search strategy is 
-formulated using these three base operations, and also functions which define the order in which these
-operations are permitted. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD. The PROGN2 
-function takes two arguments and performs them in order. The PROGN3 function similarly takes three 
-arguments and performs them in order. The IF_FOOD_AHEAD function takes two arguments, performing 
-the first if food is ahead and the latter if food is not ahead of the ant. Each base operation 
-takes one unit of time to perform. In the included example, the simulation stops running after 
+for breadcrumbs to eat. The crumbs are distributed in a path within a 32 x 32 grid. The ant 
+starts at the top left of the grid, and takes steps according to the search strategy. The ant is 
+permitted three base operations, 
+
+1. MOVE forward
+2. turn LEFT and 
+3. turn RIGHT
+
+The search strategy is has functions which define the order in which these base operations are 
+permitted. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD. 
+- The PROGN2 function takes two arguments and performs them in order. 
+- The PROGN3 function similarly takes three arguments and performs them in order. 
+- The IF_FOOD_AHEAD function takes two arguments, performing the first if food is ahead and the latter if food is not ahead of the ant. 
+
+Each base operation takes one unit of time to perform. In the included example, the simulation stops running after 
 600 time units.
 
 Included in our `/examples/` folder, there are three maps, the johnmuir_trail.txt, 
