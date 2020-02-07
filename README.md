@@ -173,6 +173,14 @@ optional arguments:
 
 ```
 
+For example, running ``` winpty python ant.py ./test.db -deterministic True ```
+resulted in the following best solution: 
+
+```prog3(ant.if_food_ahead(prog2(ant.turn_right(),ant.move_forward()),ant.if_food_a
+head(ant.turn_left(),ant.turn_right())),prog3(ant.move_forward(),ant.move_forwar
+d(),prog3(ant.move_forward(),ant.turn_left(),ant.move_forward())),prog2(prog3(an
+t.move_forward(),ant.move_forward(),ant.move_forward()),prog3(ant.move_forward()
+,ant.move_forward(),ant.move_forward())))```
 
 ## API
 
