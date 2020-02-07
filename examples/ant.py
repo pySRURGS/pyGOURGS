@@ -107,9 +107,9 @@ pset.add_variable("ant.turn_left()")
 pset.add_variable("ant.turn_right()")
 enum = pg.Enumerator(pset)
 
-def evalArtificialAnt(individual):
-    # Transform the tree expression to functionnal Python code
-    routine = eval('lambda : ' + individual)
+def evalArtificialAnt(search_strategy_string):
+    # Transform the tree expression to Python code
+    routine = eval('lambda : ' + search_strategy_string)
     # Run the generated routine
     ant.run(routine)
     return ant.eaten

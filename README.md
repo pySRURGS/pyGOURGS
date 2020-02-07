@@ -111,6 +111,21 @@ enumeration.
 enum = pg.Enumerator(pset)
 ```
 
+Every problem solved using pyGOURGS needs to have a custom defined evaluation 
+function. pyGOURGS will create potential solutions, but they will be stored as 
+strings, which need to be evaluated. For reference, the evaluation function for 
+the artificial ant problem is shown below. We create a lambda function using 
+the pyGOURGS generated solution
+
+```
+def evalArtificialAnt(search_strategy_string):
+    # Transform the tree expression to Python code
+    routine = eval('lambda : ' + search_strategy_string)
+    # Run the generated routine
+    ant.run(routine)
+    return ant.eaten
+```    
+
 ## API
 
 [Documentation](https://pysrurgs.github.io/pyGOURGS/)
@@ -138,3 +153,8 @@ With regards to community suggested changes, I would comment as to whether it wo
 * The example scripts are derived from the DEAP project: [link](https://github.com/DEAP/deap)
 * Luther Tychonievich created the algorithm mapping integers to full binary trees: [link](https://www.cs.virginia.edu/luther/blog/posts/434.html), [web archived link](http://web.archive.org/web/20190908010319/https://www.cs.virginia.edu/luther/blog/posts/434.html).
 * The icon is derived from the GNOME project and the respective artists. Taken from [link](https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg), [web archived link](https://web.archive.org/web/20161010072611/https://commons.wikimedia.org/wiki/File:Gnome-system-run.svg). License: LGPL version 3.0. 
+
+## References
+
+- Koza JR, Koza JR. Genetic programming: on the programming of computers by means of natural selection. MIT press; 1992.
+- Towfighi S. Symbolic regression by uniform random global search. SN Applied Sciences. 2020 Jan 1;2(1):34.
