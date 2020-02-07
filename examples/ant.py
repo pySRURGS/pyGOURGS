@@ -121,6 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
     parser.add_argument("-freq_print", help="An integer specifying how many strategies should be attempted before printing current job status", type=int, default=10)
     parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=bool, default=False)
+    parser.add_argument("-exhaustive", help="should algorithm be run in exhaustive/brute-force mode? This can run forever if you are not careful.", type=bool, default=False)
     if len(sys.argv) < 2:
         parser.print_usage()
         sys.exit(1)
@@ -130,19 +131,33 @@ if __name__ == "__main__":
     maximum_tree_complexity_index = arguments.num_trees
     frequency_printing = arguments.freq_print
     deterministic = arguments.deterministic
+    exhaustive = arguments.exhaustive
     with open("./johnmuir_trail.txt") as trail_file:
         ant.parse_matrix(trail_file)
     max_score = 0
     iter = 0
-    for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
-                                                  n_iters, 
-                                                  deterministic=deterministic):
-        iter = iter + 1 
-        score = evalArtificialAnt(soln)
-        pg.save_result_to_db(output_db, score, soln)
-        if score > max_score:
-            max_score = score
-        if iter % frequency_printing == 0:
-            print("best score of this run:" + str(max_score), 
-                  'iteration:'+ str(iter), end='\r')
+    if exhaustive == True:
+        for soln in enum.exhaustive_global_search(maximum_tree_complexity_index, n_iters):
+            iter = iter + 1 
+            score = evalArtificialAnt(soln)
+            pg.save_result_to_db(output_db, score, soln)
+            if score > max_score:
+                max_score = score
+            if iter % frequency_printing == 0:
+                print("best score of this run:" + str(max_score), 
+                      'iteration:'+ str(iter), end='\r')        
+    elif exhaustive == False:
+        for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
+                                                      n_iters, 
+                                                      deterministic=deterministic):
+            iter = iter + 1 
+            score = evalArtificialAnt(soln)
+            pg.save_result_to_db(output_db, score, soln)
+            if score > max_score:
+                max_score = score
+            if iter % frequency_printing == 0:
+                print("best score of this run:" + str(max_score), 
+                      'iteration:'+ str(iter), end='\r')
+    else:
+        raise Exception("Invalid value for exhaustive")
     pg.ResultList(output_db)

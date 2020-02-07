@@ -142,7 +142,8 @@ to the help.
 ```
 $ winpty python ant.py -h
 usage: ant.py [-h] [-num_trees NUM_TREES] [-num_iters NUM_ITERS]
-              [-freq_print FREQ_PRINT]
+              [-freq_print FREQ_PRINT] [-deterministic DETERMINISTIC]
+              [-exhaustive EXHAUSTIVE]
               output_db
 
 positional arguments:
@@ -162,6 +163,13 @@ optional arguments:
                         An integer specifying how many strategies should be
                         attempted before printing current job status (default:
                         10)
+  -deterministic DETERMINISTIC
+                        should algorithm be run in deterministic manner?
+                        (default: False)
+  -exhaustive EXHAUSTIVE
+                        should algorithm be run in exhaustive/brute-force
+                        mode? This can run forever if you are not careful.
+                        (default: False)
 
 ```
 
