@@ -137,7 +137,8 @@ After the script is run, the `ResultList` class is used to retrieve the top five
 search strategies considered from the database file.
 
 Users who wish to try out the completed script can run the bash script and refer 
-to the help.
+to the help. Make sure to execute `ant.py` only when the current working directory 
+is `/examples` because the script imports `pyGOURGS.py` using relative paths.
 
 ```
 $ winpty python ant.py -h
