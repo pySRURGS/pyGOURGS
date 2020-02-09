@@ -211,4 +211,4 @@ With regards to community suggested changes, I would comment as to whether it wo
 ## References
 
 - Koza JR, Koza JR. Genetic programming: on the programming of computers by means of natural selection. MIT press; 1992.
-- Towfighi S. Symbolic regression by uniform random global search. SN Applied Sciences. 2020 Jan 1;2(1):34.
+- Towfighi S. Symbolic regression by uniform random global search. SN Applied Sciences. 2020 Jan 1;2(1):34. [https://doi.org/10.1007/s42452-019-1734-3](https://doi.org/10.1007/s42452-019-1734-3)
