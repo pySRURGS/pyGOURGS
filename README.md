@@ -81,12 +81,11 @@ run for 600 time steps.
 ant = AntSimulator(600)
 ```
 
-We then define the primitives to be used in this problem. The primitives are 
-described in terms of n-ary trees. Primitives that are housed in the terminal 
-nodes of the tree are dubbed `terminals` (or variables) and primitives that are 
-housed in non-terminal nodes are `operators`. pyGOURGS needs to know the number of 
-arguments each operator takes, this value is known as the `arity`. This is the 
-second argument supplied to `add_operator`.
+We then define the primitives to be used in this problem. Primitives that are 
+housed in the terminal nodes of the tree are dubbed `terminals` (or variables)
+and primitives that are housed in non-terminal nodes are `operators`. pyGOURGS
+needs to know the number of arguments each operator takes, this value is known 
+as the `arity`. This is the second argument supplied to `add_operator`.
 
 ```
 pset = pg.PrimitiveSet()
