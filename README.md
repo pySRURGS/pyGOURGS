@@ -4,6 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/pySRURGS/pyGOURGS/badge.svg?branch=master)](https://coveralls.io/github/pySRURGS/pyGOURGS?branch=master)
 [![License: GPL v3](image/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![python versions](image/python-3_6_3_7-blue.svg)](https://www.python.org)
+[![status](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa/status.svg)](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa)
 
 # Global Optimization by Uniform Random Global Search
 
