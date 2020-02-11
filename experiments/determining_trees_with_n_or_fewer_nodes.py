@@ -1,5 +1,7 @@
 import os
 import sys
+import seaborn as sns
+import numpy as np
 sys.path.append(os.path.join('..','pyGOURGS'))
 import pyGOURGS as pg
 import sqlitedict as SqliteDict
@@ -15,7 +17,8 @@ pset.add_variable("ant.turn_left()")
 pset.add_variable("ant.turn_right()")
 enum = pg.Enumerator(pset)
 
-N = 10000000
+n = 10
+N = 1000000
 _, weights = enum.calculate_Q(N)
 values_of_i = []
 number_of_configs_at_i = []
@@ -26,20 +29,17 @@ for i in range(0,N):
     n_nodes = pg.count_nodes_in_tree(tree)
     if i % 10000 == 0:
         print(i, n_nodes)        
-    if n_nodes <= 14:
+    else:    
         values_of_i.append(i)
-        number_of_configs_at_i.append(weights[i])
+        number_of_configs_at_i.append(n_nodes)
         trees.append(tree)
-    else:
-        #values_of_i.append(i)
-        #number_of_configs_at_i.append(0)
-        pass
 
 x = list(values_of_i)
 y = number_of_configs_at_i
-plt.scatter(x,y,s=3)
-#plt.yscale('log')
+#plt.scatter(x,y)
+x = np.array(x)
+y = np.array(y)
+sns.kdeplot(x, y, cmap="Blues", shade=True, shade_lowest=False)
+plt.ylabel("number of nodes")
+plt.xlabel("pyGOURGS enumeration iterable")
 plt.show()
-
-pdb.set_trace()
-print("Hi")
