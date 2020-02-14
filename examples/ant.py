@@ -6,6 +6,9 @@ import random
 import numpy
 import pdb
 from functools import partial
+import multiprocessing
+import parmap
+import tqdm
 import sys,os
 sys.path.append(os.path.join('..', 'pyGOURGS'))
 import pyGOURGS as pg
@@ -97,7 +100,6 @@ class AntSimulator(object):
         self.matrix_col = len(self.matrix[0])
         self.matrix_exc = copy.deepcopy(self.matrix)
 
-ant = AntSimulator(600)
 pset = pg.PrimitiveSet()
 pset.add_operator("ant.if_food_ahead", 2)
 pset.add_operator("prog2", 2)
@@ -114,14 +116,34 @@ def evalArtificialAnt(search_strategy_string):
     ant.run(routine)
     return ant.eaten
 
+def main(soln, output_db):    
+    score = evalArtificialAnt(soln)
+    pg.save_result_to_db(output_db, score, soln)
+    return score
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+ant = AntSimulator(600)
+with open("./johnmuir_trail.txt") as trail_file:
+    ant.parse_matrix(trail_file)
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='ant.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
     parser.add_argument("-freq_print", help="An integer specifying how many strategies should be attempted before printing current job status", type=int, default=10)
-    parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=bool, default=False)
+    parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=str2bool, default=False)
     parser.add_argument("-exhaustive", help="should algorithm be run in exhaustive/brute-force mode? This can run forever if you are not careful.", type=bool, default=False)
+    parser.add_argument("-multiprocessing", help="should algorithm be run in multiprocessing mode?", type=str2bool, default=False)
     if len(sys.argv) < 2:
         parser.print_usage()
         sys.exit(1)
@@ -132,32 +154,65 @@ if __name__ == "__main__":
     frequency_printing = arguments.freq_print
     deterministic = arguments.deterministic
     exhaustive = arguments.exhaustive
-    with open("./johnmuir_trail.txt") as trail_file:
-        ant.parse_matrix(trail_file)
+    multiproc = arguments.multiprocessing
     max_score = 0
     iter = 0
     if exhaustive == True:
-        for soln in enum.exhaustive_global_search(maximum_tree_complexity_index, n_iters):
-            iter = iter + 1 
-            score = evalArtificialAnt(soln)
-            pg.save_result_to_db(output_db, score, soln)
-            if score > max_score:
-                max_score = score
-            if iter % frequency_printing == 0:
-                print("best score of this run:" + str(max_score), 
-                      'iteration:'+ str(iter), end='\r')        
+        if multiproc == True:
+            jobs = []
+            for soln in enum.exhaustive_global_search(maximum_tree_complexity_index):
+                jobs.append(soln)
+            results = parmap.map(main, jobs, output_db=output_db, 
+                                 pm_pbar=True, pm_chunksize=3)
+            for result in results:
+                iter = iter + 1
+                score = result
+                if score > max_score:
+                    max_score = score
+                if iter % frequency_printing == 0:
+                    print("best score of this run:" + str(max_score), 
+                          'iteration:'+ str(iter), end='\r')
+        elif multiproc == False:
+            for soln in enum.exhaustive_global_search(maximum_tree_complexity_index):
+                score = main(soln, output_db)
+                iter = iter + 1
+                if score > max_score:
+                    max_score = score
+                if iter % frequency_printing == 0:
+                    print("best score of this run:" + str(max_score), 
+                          'iteration:'+ str(iter), end='\r')
+        else:
+            raise Exception("Invalid value of multiproc, must be either true/false")
     elif exhaustive == False:
-        for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
-                                                      n_iters, 
-                                                      deterministic=deterministic):
-            iter = iter + 1 
-            score = evalArtificialAnt(soln)
-            pg.save_result_to_db(output_db, score, soln)
-            if score > max_score:
-                max_score = score
-            if iter % frequency_printing == 0:
-                print("best score of this run:" + str(max_score), 
-                      'iteration:'+ str(iter), end='\r')
+        if multiproc == True:
+            jobs = []
+            for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
+                                                          n_iters, 
+                                                          deterministic=deterministic):
+                jobs.append(soln)
+            results = parmap.map(main, jobs, output_db=output_db, 
+                                 pm_pbar=True, pm_chunksize=3)
+            for result in results:
+                iter = iter + 1
+                score = result
+                if score > max_score:
+                    max_score = score
+                if iter % frequency_printing == 0:
+                    print("best score of this run:" + str(max_score), 
+                          'iteration:'+ str(iter), end='\r')
+        elif multiproc == False:
+            for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
+                                                          n_iters, 
+                                                          deterministic=deterministic):
+                score = main(soln, output_db)
+                iter = iter + 1
+                if score > max_score:
+                    max_score = score
+                if iter % frequency_printing == 0:
+                    print("best score of this run:" + str(max_score), 
+                          'iteration:'+ str(iter), end='\r')
+        else:
+            raise Exception("Invalid value of multiproc, must be either true/false")    
     else:
         raise Exception("Invalid value for exhaustive")
     pg.ResultList(output_db)

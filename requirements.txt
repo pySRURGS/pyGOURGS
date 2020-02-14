@@ -5,3 +5,5 @@ pytest-cov==2.7.1
 methodtools==0.1.2
 sqlitedict==1.6.0
 tabulate==0.8.3
+parmap==1.5.2
+tqdm==4.32.2
