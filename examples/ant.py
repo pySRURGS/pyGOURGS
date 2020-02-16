@@ -141,7 +141,7 @@ if __name__ == "__main__":
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
     parser.add_argument("-freq_print", help="An integer specifying how many strategies should be attempted before printing current job status", type=int, default=10)
     parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=str2bool, default=False)
-    parser.add_argument("-exhaustive", help="should algorithm be run in exhaustive/brute-force mode? This can run forever if you are not careful.", type=bool, default=False)
+    parser.add_argument("-exhaustive", help="should algorithm be run in exhaustive/brute-force mode? This can run forever if you are not careful.", type=str2bool, default=False)
     parser.add_argument("-multiprocessing", help="should algorithm be run in multiprocessing mode?", type=str2bool, default=False)
     if len(sys.argv) < 2:
         parser.print_usage()
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     exhaustive = arguments.exhaustive
     multiproc = arguments.multiprocessing
     max_score = 0
-    iter = 0    
+    iter = 0
     if exhaustive == True:
         _, weights = enum.calculate_Q(maximum_tree_complexity_index)
         num_solns = int(numpy.sum(weights))
@@ -174,8 +174,12 @@ if __name__ == "__main__":
                 print('\r' + "Progress: " + str(iter/num_solns), end='')
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
+            iter = 0
             for (score, soln) in results:
-                pg.save_result_to_db(output_db, score, soln)
+                iter = iter + 1
+                pg.save_result_to_db(output_db, score, soln, commit=False)
+                print("saving results:" + str(iter/num_solns), end='\r')            
+            pg.commit_db(output_db)
             iter = 0 
             for result in results:
                 iter = iter + 1
@@ -199,6 +203,7 @@ if __name__ == "__main__":
         else:
             raise Exception("Invalid value multiproc must be true/false")
     elif exhaustive == False:
+        num_solns = n_iters
         if multiproc == True:
             jobs = []
             for soln in enum.uniform_random_global_search(
@@ -207,8 +212,12 @@ if __name__ == "__main__":
                 jobs.append(soln)
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
+            iter = 0
             for (score, soln) in results:
-                pg.save_result_to_db(output_db, score, soln)
+                iter = iter + 1
+                pg.save_result_to_db(output_db, score, soln, commit=False)
+                print("saving results:" + str(iter/num_solns), end='\r')            
+            pg.commit_db(output_db)
             for result in results:
                 iter = iter + 1
                 score = result[0]
