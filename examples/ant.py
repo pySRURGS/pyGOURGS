@@ -117,9 +117,8 @@ def evalArtificialAnt(search_strategy_string):
     return ant.eaten
 
 def main(soln, output_db):    
-    score = evalArtificialAnt(soln)
-    pg.save_result_to_db(output_db, score, soln)
-    return score
+    score = evalArtificialAnt(soln)    
+    return score, soln
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -175,10 +174,12 @@ if __name__ == "__main__":
                 print('\r' + "Progress: " + str(iter/num_solns), end='')
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
+            for (score, soln) in results:
+                pg.save_result_to_db(output_db, score, soln)
             iter = 0 
             for result in results:
                 iter = iter + 1
-                score = result
+                score = result[0]
                 if score > max_score:
                     max_score = score
                 if iter % frequency_printing == 0:
@@ -187,7 +188,8 @@ if __name__ == "__main__":
         elif multiproc == False:
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
-                score = main(soln, output_db)
+                score = main(soln, output_db)[0]
+                pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
                 if score > max_score:
                     max_score = score
@@ -205,9 +207,11 @@ if __name__ == "__main__":
                 jobs.append(soln)
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
+            for (score, soln) in results:
+                pg.save_result_to_db(output_db, score, soln)
             for result in results:
                 iter = iter + 1
-                score = result
+                score = result[0]
                 if score > max_score:
                     max_score = score
                 if iter % frequency_printing == 0:
@@ -217,7 +221,8 @@ if __name__ == "__main__":
             for soln in enum.uniform_random_global_search(
                                                   maximum_tree_complexity_index, 
                                           n_iters, deterministic=deterministic):
-                score = main(soln, output_db)
+                score = main(soln, output_db)[0]
+                pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
                 if score > max_score:
                     max_score = score
