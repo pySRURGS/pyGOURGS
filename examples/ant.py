@@ -13,6 +13,7 @@ import sys,os
 sys.path.append(os.path.join('..', 'pyGOURGS'))
 import pyGOURGS as pg
 import argparse 
+from sqlitedict import SqliteDict
 
 def progn(*args):
     for arg in args:
@@ -175,11 +176,12 @@ if __name__ == "__main__":
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
             iter = 0
-            for (score, soln) in results:
-                iter = iter + 1
-                pg.save_result_to_db(output_db, score, soln, commit=False)
-                print("saving results:" + str(iter/num_solns), end='\r')            
-            pg.commit_db(output_db)
+            with SqliteDict(output_db, autocommit=False) as results_dict:
+                for (score, soln) in results:
+                    iter = iter + 1                
+                    results_dict[soln] = score
+                    print("Saving progress: " + str(iter/num_solns), end='\r')
+                results_dict.commit()            
             iter = 0 
             for result in results:
                 iter = iter + 1
@@ -213,11 +215,12 @@ if __name__ == "__main__":
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
             iter = 0
-            for (score, soln) in results:
-                iter = iter + 1
-                pg.save_result_to_db(output_db, score, soln, commit=False)
-                print("saving results:" + str(iter/num_solns), end='\r')            
-            pg.commit_db(output_db)
+            with SqliteDict(output_db, autocommit=False) as results_dict:
+                for (score, soln) in results:
+                    iter = iter + 1                
+                    results_dict[soln] = score
+                    print("Saving progress: " + str(iter/num_solns), end='\r')
+                results_dict.commit()      
             for result in results:
                 iter = iter + 1
                 score = result[0]
