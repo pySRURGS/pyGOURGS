@@ -156,14 +156,26 @@ if __name__ == "__main__":
     exhaustive = arguments.exhaustive
     multiproc = arguments.multiprocessing
     max_score = 0
-    iter = 0
+    iter = 0    
     if exhaustive == True:
+        _, weights = enum.calculate_Q(maximum_tree_complexity_index)
+        num_solns = int(numpy.sum(weights))
+        txt = input("The number of equations to be considered is " + 
+                    str(num_solns) + ", do you want to proceed?" + 
+                    " If yes, press 'c' then 'enter'.")
+        if txt != 'c':
+            print("You input: " + txt + ", exiting...")
+            exit(1)
         if multiproc == True:
             jobs = []
-            for soln in enum.exhaustive_global_search(maximum_tree_complexity_index):
+            for soln in enum.exhaustive_global_search(
+                                                 maximum_tree_complexity_index):
                 jobs.append(soln)
+                iter = iter + 1
+                print('\r' + "Progress: " + str(iter/num_solns), end='')
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
+            iter = 0 
             for result in results:
                 iter = iter + 1
                 score = result
@@ -173,7 +185,8 @@ if __name__ == "__main__":
                     print("best score of this run:" + str(max_score), 
                           'iteration:'+ str(iter), end='\r')
         elif multiproc == False:
-            for soln in enum.exhaustive_global_search(maximum_tree_complexity_index):
+            for soln in enum.exhaustive_global_search(
+                                                 maximum_tree_complexity_index):
                 score = main(soln, output_db)
                 iter = iter + 1
                 if score > max_score:
@@ -182,13 +195,13 @@ if __name__ == "__main__":
                     print("best score of this run:" + str(max_score), 
                           'iteration:'+ str(iter), end='\r')
         else:
-            raise Exception("Invalid value of multiproc, must be either true/false")
+            raise Exception("Invalid value multiproc must be true/false")
     elif exhaustive == False:
         if multiproc == True:
             jobs = []
-            for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
-                                                          n_iters, 
-                                                          deterministic=deterministic):
+            for soln in enum.uniform_random_global_search(
+                                         maximum_tree_complexity_index, n_iters, 
+                                                   deterministic=deterministic):
                 jobs.append(soln)
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
@@ -201,9 +214,9 @@ if __name__ == "__main__":
                     print("best score of this run:" + str(max_score), 
                           'iteration:'+ str(iter), end='\r')
         elif multiproc == False:
-            for soln in enum.uniform_random_global_search(maximum_tree_complexity_index, 
-                                                          n_iters, 
-                                                          deterministic=deterministic):
+            for soln in enum.uniform_random_global_search(
+                                                  maximum_tree_complexity_index, 
+                                          n_iters, deterministic=deterministic):
                 score = main(soln, output_db)
                 iter = iter + 1
                 if score > max_score:
@@ -212,7 +225,7 @@ if __name__ == "__main__":
                     print("best score of this run:" + str(max_score), 
                           'iteration:'+ str(iter), end='\r')
         else:
-            raise Exception("Invalid value of multiproc, must be either true/false")    
+            raise Exception("Invalid multiproc, must be true/false")    
     else:
         raise Exception("Invalid value for exhaustive")
     pg.ResultList(output_db)
