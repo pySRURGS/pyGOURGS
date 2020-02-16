@@ -872,6 +872,13 @@ def initialize_db(path_to_db):
                 None, None, np.inf, None, None)
     return
 
+def commit_db(path_to_db):
+    '''
+        Commit the previously executed transactions
+    '''
+    with SqliteDict(path_to_db, autocommit=False) as results_dict:
+        results_dict.commit()
+    
 def save_result_to_db(path_to_db, result, input, commit=True):
     '''
         Saves results to the SqliteDict file 
