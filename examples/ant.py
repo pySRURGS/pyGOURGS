@@ -117,6 +117,11 @@ def evalArtificialAnt(search_strategy_string):
     ant.run(routine)
     return ant.eaten
 
+def main_rando(seed, enum, max_tree_complx, output_db):
+    soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
+    score = evalArtificialAnt(soln)    
+    return score, soln
+
 def main(soln, output_db):    
     score = evalArtificialAnt(soln)    
     return score, soln
@@ -155,6 +160,8 @@ if __name__ == "__main__":
     deterministic = arguments.deterministic
     exhaustive = arguments.exhaustive
     multiproc = arguments.multiprocessing
+    if deterministic == False:
+        deterministic = None
     max_score = 0
     iter = 0
     if exhaustive == True:
@@ -207,16 +214,12 @@ if __name__ == "__main__":
     elif exhaustive == False:
         num_solns = n_iters
         if multiproc == True:
-            jobs = []
-            iter = 0
-            for soln in enum.uniform_random_global_search(
-                                         maximum_tree_complexity_index, n_iters, 
-                                                   deterministic=deterministic):
-                jobs.append(soln)
-                iter = iter + 1
-                print("Progress: " + str(iter/num_solns), end='\r')
-            results = parmap.map(main, jobs, output_db=output_db, 
-                                 pm_pbar=True, pm_chunksize=3)
+            seeds = list(range(0,n_iters))
+            results = parmap.map(main_rando, seeds, enum=enum, 
+                                 max_tree_complx=maximum_tree_complexity_index, 
+                                 output_db=output_db, 
+                                 pm_pbar=True, 
+                                 pm_chunksize=3)
             iter = 0
             with SqliteDict(output_db, autocommit=False) as results_dict:
                 for (score, soln) in results:
@@ -235,7 +238,7 @@ if __name__ == "__main__":
         elif multiproc == False:
             for soln in enum.uniform_random_global_search(
                                                   maximum_tree_complexity_index, 
-                                          n_iters, deterministic=deterministic):
+                                                   n_iters, seed=deterministic):
                 score = main(soln, output_db)[0]
                 pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
