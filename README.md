@@ -141,11 +141,8 @@ to the help. Make sure to execute `ant.py` only when the current working directo
 is `/examples` because the script imports `pyGOURGS.py` using relative paths.
 
 ```
-$ winpty python ant.py -h
-usage: ant.py [-h] [-num_trees NUM_TREES] [-num_iters NUM_ITERS]
-              [-freq_print FREQ_PRINT] [-deterministic DETERMINISTIC]
-              [-exhaustive EXHAUSTIVE]
-              output_db
+$ winpty python ant.py  -h
+usage: ant.py [-h] [-num_trees NUM_TREES] [-num_iters NUM_ITERS]                                                                                                                                                                             [-freq_print FREQ_PRINT] [-deterministic DETERMINISTIC]                                                                                                                                                                        [-exhaustive EXHAUSTIVE] [-multiprocessing MULTIPROCESSING]                                                                                                                                                                    output_db
 
 positional arguments:
   output_db             An absolute filepath where we save results to a SQLite
@@ -171,7 +168,9 @@ optional arguments:
                         should algorithm be run in exhaustive/brute-force
                         mode? This can run forever if you are not careful.
                         (default: False)
-
+  -multiprocessing MULTIPROCESSING
+                        should algorithm be run in multiprocessing mode?
+                        (default: False)
 ```
 
 For example, running `winpty python ant.py ./test.db -deterministic True`
