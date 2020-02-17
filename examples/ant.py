@@ -208,10 +208,13 @@ if __name__ == "__main__":
         num_solns = n_iters
         if multiproc == True:
             jobs = []
+            iter = 0
             for soln in enum.uniform_random_global_search(
                                          maximum_tree_complexity_index, n_iters, 
                                                    deterministic=deterministic):
                 jobs.append(soln)
+                iter = iter + 1
+                print("Progress: " + str(iter/num_solns), end='\r')
             results = parmap.map(main, jobs, output_db=output_db, 
                                  pm_pbar=True, pm_chunksize=3)
             iter = 0
