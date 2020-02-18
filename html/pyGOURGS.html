@@ -70,19 +70,6 @@ def count_nodes_in_tree(tree):
     n_nodes = n_terminals + n_operators
     return n_nodes
 
-def print_grid(list_iter_0, list_iter_1, funchandle):
-    &#39;&#39;&#39;
-        Function used for debugging purposes during development.
-    &#39;&#39;&#39;
-    grid = np.zeros((len(list_iter_0), len(list_iter_1)))
-    for i in range(0,len(list_iter_0)):
-        for j in range(0,len(list_iter_1)):
-            try: 
-                grid[i][j] = funchandle(list_iter_0[i], list_iter_1[j])
-            except Exception as e:
-                grid[i][j] = -1
-    print(grid)
-
 def get_element_of_cartesian_product(*args, repeat=1, index=0):
     &#34;&#34;&#34;
     Access a specific element of a cartesian product, without needing to iterate
@@ -901,10 +888,7 @@ def initialize_db(path_to_db):
         for the &#39;best_result&#39; key
     &#39;&#39;&#39;
     with SqliteDict(path_to_db, autocommit=True) as results_dict:
-        try:
-            results_dict[&#39;best_result&#39;]
-        except KeyError:
-            results_dict[&#39;best_result&#39;] = Result(None, None)
+        pass        
     return
     
 def save_result_to_db(path_to_db, result, input):
@@ -976,7 +960,7 @@ class ResultList(object):
             n_nodes = count_nodes_in_tree(self._results[i]._input)
             self._results[i]._nodes = n_nodes
         
-    def print(self, top=5, mode=&#39;succinct&#39;):
+    def print(self, top=2):
         &#34;&#34;&#34;
         Prints the score for the top results in the database. Run `self.sort` prior 
         to executing `self.print`.
@@ -1000,25 +984,7 @@ class ResultList(object):
         table_string = tabulate.tabulate(table, headers=header)
         print(table_string)
 
-        
-if __name__ == &#39;__main__&#39;:
-    from operator import add, sub, mul, truediv
-    pset = PrimitiveSet()
-    pset.add_operator(&#34;add&#34;, 2)
-    pset.add_operator(&#34;sub&#34;, 2)
-    pset.add_operator(&#34;truediv&#34;, 2)
-    pset.add_variable(&#34;x&#34;)
-    pset.add_variable(&#34;y&#34;)
-    enum = Enumerator(pset)
-    i_list = range(0,10)
-    b_list = range(0,10)    
-    enum.generate_specified_solution(10, 80, 10, 10)
-    sol = enum.uniform_random_global_search_once(10)
-    compile(sol, pset)
-    print(sol)
-    for sol in enum.exhaustive_global_search(2):
-        print(sol)
-    
+
     </code></pre>
 </details>
 </section>
@@ -1455,10 +1421,7 @@ for the 'best_result' key</p></section>
         for the &#39;best_result&#39; key
     &#39;&#39;&#39;
     with SqliteDict(path_to_db, autocommit=True) as results_dict:
-        try:
-            results_dict[&#39;best_result&#39;]
-        except KeyError:
-            results_dict[&#39;best_result&#39;] = Result(None, None)
+        pass        
     return</code></pre>
 </details>
 </dd>
@@ -1499,29 +1462,6 @@ for the 'best_result' key</p></section>
     &#34;&#34;&#34;
     result = int(mpmath.power(a, b))
     return result</code></pre>
-</details>
-</dd>
-<dt id="pyGOURGS.print_grid"><code class="name flex">
-<span>def <span class="ident">print_grid</span></span>(<span>list_iter_0, list_iter_1, funchandle)</span>
-</code></dt>
-<dd>
-<section class="desc"><p>Function used for debugging purposes during development.</p></section>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def print_grid(list_iter_0, list_iter_1, funchandle):
-    &#39;&#39;&#39;
-        Function used for debugging purposes during development.
-    &#39;&#39;&#39;
-    grid = np.zeros((len(list_iter_0), len(list_iter_1)))
-    for i in range(0,len(list_iter_0)):
-        for j in range(0,len(list_iter_1)):
-            try: 
-                grid[i][j] = funchandle(list_iter_0[i], list_iter_1[j])
-            except Exception as e:
-                grid[i][j] = -1
-    print(grid)</code></pre>
 </details>
 </dd>
 <dt id="pyGOURGS.save_result_to_db"><code class="name flex">
@@ -3251,7 +3191,7 @@ but will eventually be evaluated to whatever results from
             n_nodes = count_nodes_in_tree(self._results[i]._input)
             self._results[i]._nodes = n_nodes
         
-    def print(self, top=5, mode=&#39;succinct&#39;):
+    def print(self, top=2):
         &#34;&#34;&#34;
         Prints the score for the top results in the database. Run `self.sort` prior 
         to executing `self.print`.
@@ -3317,7 +3257,7 @@ but will eventually be evaluated to whatever results from
 </details>
 </dd>
 <dt id="pyGOURGS.ResultList.print"><code class="name flex">
-<span>def <span class="ident">print</span></span>(<span>self, top=5, mode='succinct')</span>
+<span>def <span class="ident">print</span></span>(<span>self, top=2)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Prints the score for the top results in the database. Run <code>self.sort</code> prior
@@ -3337,7 +3277,7 @@ to executing <code>self.print</code>.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def print(self, top=5, mode=&#39;succinct&#39;):
+<pre><code class="python">def print(self, top=2):
     &#34;&#34;&#34;
     Prints the score for the top results in the database. Run `self.sort` prior 
     to executing `self.print`.
@@ -3408,7 +3348,6 @@ error.</p></section>
 <li><code><a title="pyGOURGS.get_element_of_cartesian_product" href="#pyGOURGS.get_element_of_cartesian_product">get_element_of_cartesian_product</a></code></li>
 <li><code><a title="pyGOURGS.initialize_db" href="#pyGOURGS.initialize_db">initialize_db</a></code></li>
 <li><code><a title="pyGOURGS.mempower" href="#pyGOURGS.mempower">mempower</a></code></li>
-<li><code><a title="pyGOURGS.print_grid" href="#pyGOURGS.print_grid">print_grid</a></code></li>
 <li><code><a title="pyGOURGS.save_result_to_db" href="#pyGOURGS.save_result_to_db">save_result_to_db</a></code></li>
 </ul>
 </li>
