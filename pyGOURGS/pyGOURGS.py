@@ -939,7 +939,7 @@ class ResultList(object):
             n_nodes = count_nodes_in_tree(self._results[i]._input)
             self._results[i]._nodes = n_nodes
         
-    def print(self, top=5, mode='succinct'):
+    def print(self, top=2):
         """
         Prints the score for the top results in the database. Run `self.sort` prior 
         to executing `self.print`.
