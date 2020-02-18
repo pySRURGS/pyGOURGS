@@ -736,7 +736,7 @@ class Enumerator(object):
         tree = working_tree 
         return tree
 
-    def uniform_random_global_search_once(self, N):
+    def uniform_random_global_search_once(self, N, seed=None):
         """
         Generates a random candidate solution
 
@@ -751,6 +751,8 @@ class Enumerator(object):
         candidate_solution: string
             The candidate solution generated from the randomly generated indices
         """
+        if seed is not None:
+            random.seed(seed)
         terminals = self._pset.get_terminals()        
         pset = self._pset    
         _, weights = self.calculate_Q(N)
@@ -762,7 +764,7 @@ class Enumerator(object):
         candidate_solution = self.generate_specified_solution(i, r, s, N)
         return candidate_solution
         
-    def uniform_random_global_search(self, N, num_soln, deterministic=False):
+    def uniform_random_global_search(self, N, num_soln, seed=None):
         """
         Yields (this is a generator) a random candidate solutions `num_soln` 
         times.
@@ -776,18 +778,18 @@ class Enumerator(object):
         num_soln: int
             The number of solutions to generate
         
-        deterministic: bool
-            Boolean which specifies whether to run in deterministic mode or not. 
-            If not True, random.seed() will not be set, and so will result in
-            random behaviour.
+        seed: int
+            This value initializes the random number generator. Runs with the 
+            same seed will result in identical outputs, so this seed permits us 
+            to run the algorithm deterministically.
             
         Yields
         -------
         candidate_solution: string
             The candidate solution generated
         """
-        if deterministic == True:
-            random.seed(0)
+        if seed is not None:
+            random.seed(seed)
         for j in range(0, num_soln):
             yield self.uniform_random_global_search_once(N)
         
@@ -868,22 +870,14 @@ def initialize_db(path_to_db):
         try:
             results_dict['best_result']
         except KeyError:
-            results_dict['best_result'] = Result(
-                None, None, np.inf, None, None)
+            results_dict['best_result'] = Result(None, None)
     return
-
-def commit_db(path_to_db):
-    '''
-        Commit the previously executed transactions
-    '''
-    with SqliteDict(path_to_db, autocommit=False) as results_dict:
-        results_dict.commit()
     
-def save_result_to_db(path_to_db, result, input, commit=True):
+def save_result_to_db(path_to_db, result, input):
     '''
         Saves results to the SqliteDict file 
     '''
-    with SqliteDict(path_to_db, autocommit=commit) as results_dict:
+    with SqliteDict(path_to_db, autocommit=True) as results_dict:
         results_dict[input] = result    
 
 def check_in_db(path_to_db, input):
@@ -904,6 +898,7 @@ class Result(object):
     def __init__(self, input, score):
         self._input = input
         self._score = score
+        self._nodes = None
 
 class ResultList(object):
     """
@@ -918,7 +913,7 @@ class ResultList(object):
         self._results = []
         self._path_to_db = path_to_db
         self.load()
-        self.sort()
+        self.sort()        
         self.print()
         
     def load(self):
@@ -938,6 +933,14 @@ class ResultList(object):
         error.
         """
         self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+
+    def count_nodes(self):
+        """
+        For each result, count the number of nodes in the tree
+        """
+        for i in range(0,len(self._results)):
+            n_nodes = count_nodes_in_tree(self._results[i]._input)
+            self._results[i]._nodes = n_nodes
         
     def print(self, top=5, mode='succinct'):
         """

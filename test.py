@@ -117,6 +117,19 @@ class TestSymbolicRegression(unittest.TestCase):
         for soln in self.enum.exhaustive_global_search(2,5):
             solns.append(soln)
         self.assertEqual(len(solns), 5)
+
+class TestDatabase(unittest.TestCase):
+
+    def test_setup_db(self):
+        path_to_db = './test_db.db'
+        pg.initialize_db(path_to_db)
+        self.assertEqual(os.path.isfile(path_to_db), True)
+        pg.save_result_to_db(path_to_db, 1245215125, 'test_key')
+        check_test_key = pg.check_in_db(path_to_db, 'test_key')        
+        self.assertEqual(check_test_key, True)
+        check_fake_key = pg.check_in_db(path_to_db, 'fake_key')
+        self.assertEqual(check_fake_key, False)
+        
         
 if __name__ == '__main__':
     unittest.main()
