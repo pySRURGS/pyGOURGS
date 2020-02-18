@@ -867,7 +867,7 @@ def initialize_db(path_to_db):
         for the 'best_result' key
     '''
     with SqliteDict(path_to_db, autocommit=True) as results_dict:
-        results_dict['best_result'] = None        
+        pass        
     return
     
 def save_result_to_db(path_to_db, result, input):
