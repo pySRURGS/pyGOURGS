@@ -966,23 +966,5 @@ class ResultList(object):
         table_string = tabulate.tabulate(table, headers=header)
         print(table_string)
 
-        
-if __name__ == '__main__':
-    from operator import add, sub, mul, truediv
-    pset = PrimitiveSet()
-    pset.add_operator("add", 2)
-    pset.add_operator("sub", 2)
-    pset.add_operator("truediv", 2)
-    pset.add_variable("x")
-    pset.add_variable("y")
-    enum = Enumerator(pset)
-    i_list = range(0,10)
-    b_list = range(0,10)    
-    enum.generate_specified_solution(10, 80, 10, 10)
-    sol = enum.uniform_random_global_search_once(10)
-    compile(sol, pset)
-    print(sol)
-    for sol in enum.exhaustive_global_search(2):
-        print(sol)
-    
+
     
