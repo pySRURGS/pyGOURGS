@@ -1,9 +1,11 @@
-import sys, os
+import os
+import sys
+import types
+import unittest
+from operator import add, sub, truediv, mul
 sys.path.append(os.path.join('.', 'pyGOURGS'))
 import pyGOURGS.pyGOURGS as pg
 from pyGOURGS.pyGOURGS import decimal_to_base_m, base_m_to_decimal
-import unittest
-from operator import add, sub, truediv, mul
 
 class TestNumberBaseConversions(unittest.TestCase):
 
@@ -117,6 +119,8 @@ class TestSymbolicRegression(unittest.TestCase):
         for soln in self.enum.exhaustive_global_search(2,5):
             solns.append(soln)
         self.assertEqual(len(solns), 5)
+        func = pg.compile(soln, self.pset)
+        self.assertEqual(type(func), types.FunctionType)
 
 class TestDatabase(unittest.TestCase):
 
@@ -129,7 +133,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(check_test_key, True)
         check_fake_key = pg.check_in_db(path_to_db, 'fake_key')
         self.assertEqual(check_fake_key, False)
-        
+        pg.ResultList(path_to_db)
         
 if __name__ == '__main__':
     unittest.main()
