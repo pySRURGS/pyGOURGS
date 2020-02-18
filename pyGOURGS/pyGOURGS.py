@@ -36,19 +36,6 @@ def count_nodes_in_tree(tree):
     n_nodes = n_terminals + n_operators
     return n_nodes
 
-def print_grid(list_iter_0, list_iter_1, funchandle):
-    '''
-        Function used for debugging purposes during development.
-    '''
-    grid = np.zeros((len(list_iter_0), len(list_iter_1)))
-    for i in range(0,len(list_iter_0)):
-        for j in range(0,len(list_iter_1)):
-            try: 
-                grid[i][j] = funchandle(list_iter_0[i], list_iter_1[j])
-            except Exception as e:
-                grid[i][j] = -1
-    print(grid)
-
 def get_element_of_cartesian_product(*args, repeat=1, index=0):
     """
     Access a specific element of a cartesian product, without needing to iterate
