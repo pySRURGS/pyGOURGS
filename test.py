@@ -128,7 +128,10 @@ class TestDatabase(unittest.TestCase):
         path_to_db = './test_db.db'
         pg.initialize_db(path_to_db)
         self.assertEqual(os.path.isfile(path_to_db), True)
-        pg.save_result_to_db(path_to_db, 1245215125, 'test_key')
+        pg.save_result_to_db(path_to_db, 12, 'test_key')
+        pg.save_result_to_db(path_to_db, 14, 'test_key1')
+        pg.save_result_to_db(path_to_db, 15, 'test_key2')
+        pg.save_result_to_db(path_to_db, 13, 'test_key3')
         check_test_key = pg.check_in_db(path_to_db, 'test_key')        
         self.assertEqual(check_test_key, True)
         check_fake_key = pg.check_in_db(path_to_db, 'fake_key')
