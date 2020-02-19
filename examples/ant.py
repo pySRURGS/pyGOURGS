@@ -6,7 +6,7 @@ import random
 import numpy
 import pdb
 from functools import partial
-import multiprocessing
+import multiprocessing as mp
 import parmap
 import tqdm
 import sys,os
@@ -110,23 +110,72 @@ pset.add_variable("ant.turn_left()")
 pset.add_variable("ant.turn_right()")
 enum = pg.Enumerator(pset)
 
+def solution_saving_worker(queue, n_items, output_db):
+    """
+        Takes solutions from the queue of evaluated solutions, 
+        then saves them to the database.
+    """
+    checkpoint = int(n_items/10) + 1
+    with SqliteDict(output_db, autocommit=False) as results_dict:
+        for j in range(0, n_items):
+            [score, soln] = queue.get()
+            results_dict[soln] = score
+            if j == checkpoint:
+                print('Saving results to db: ' + str(j/n_items))
+        results_dict.commit()
+
 def evalArtificialAnt(search_strategy_string):
-    # Transform the tree expression to Python code
+    """
+        Evaluates the artificial ant
+        
+        Converts a string search strategy into a Python executable lambda 
+        function, which is then executed, calculating the number of food particles
+        this ant ate using the given search strategy
+    """
     routine = eval('lambda : ' + search_strategy_string)
     # Run the generated routine
     ant.run(routine)
     return ant.eaten
 
-def main_rando(seed, enum, max_tree_complx, output_db):
+def main_rando(seed, enum, max_tree_complx):
+    """
+        evaluates a randomly generated solution
+    """
     soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
     score = evalArtificialAnt(soln)    
     return score, soln
 
-def main(soln, output_db):    
+def main_rando_queue(seed, enum, max_tree_complx, queue):
+    """
+        evaluates a randomly generated solution
+        and puts it in the queue 
+        used for multiprocessing
+    """
+    soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
+    score = evalArtificialAnt(soln)    
+    queue.put([score, soln])
+
+def main(soln):
+    """
+        evaluates a proposed solution
+    """
     score = evalArtificialAnt(soln)    
     return score, soln
 
+def main_queue(soln, queue):
+    """
+        evaluates a proposed solution
+        and puts the solution in the queue
+        used for multiprocessing
+    """
+    score = evalArtificialAnt(soln)    
+    queue.put([score, soln])
+
 def str2bool(v):
+    '''
+        This helper function takes various ways of specifying True/False and 
+        unifies them. Used in the command line interface.
+    '''
     if isinstance(v, bool):
        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -164,6 +213,8 @@ if __name__ == "__main__":
         deterministic = None
     max_score = 0
     iter = 0
+    manager = mp.Manager()
+    queue = manager.Queue()
     if exhaustive == True:
         _, weights = enum.calculate_Q(maximum_tree_complexity_index)
         num_solns = int(numpy.sum(weights))
@@ -175,33 +226,21 @@ if __name__ == "__main__":
             exit(1)
         if multiproc == True:
             jobs = []
+            runner = mp.Process(target=solution_saving_worker, 
+                             args=(queue, num_solns, output_db))
+            runner.start()
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
                 jobs.append(soln)
                 iter = iter + 1
                 print('\r' + "Progress: " + str(iter/num_solns), end='')
-            results = parmap.map(main, jobs, output_db=output_db, 
+            results = parmap.map(main_queue, jobs, queue=queue,
                                  pm_pbar=True, pm_chunksize=3)
-            iter = 0
-            with SqliteDict(output_db, autocommit=False) as results_dict:
-                for (score, soln) in results:
-                    iter = iter + 1                
-                    results_dict[soln] = score
-                    print("Saving progress: " + str(iter/num_solns), end='\r')
-                results_dict.commit()            
-            iter = 0 
-            for result in results:
-                iter = iter + 1
-                score = result[0]
-                if score > max_score:
-                    max_score = score
-                if iter % frequency_printing == 0:
-                    print("best score of this run:" + str(max_score), 
-                          'iteration:'+ str(iter), end='\r')
+            runner.join()
         elif multiproc == False:
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
-                score = main(soln, output_db)[0]
+                score = main(soln)[0]
                 pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
                 if score > max_score:
@@ -215,31 +254,18 @@ if __name__ == "__main__":
         num_solns = n_iters
         if multiproc == True:
             seeds = list(range(0,n_iters))
-            results = parmap.map(main_rando, seeds, enum=enum, 
+            runner = mp.Process(target=solution_saving_worker, 
+                             args=(queue, num_solns, output_db))
+            runner.start()
+            results = parmap.map(main_rando_queue, seeds, enum=enum, 
                                  max_tree_complx=maximum_tree_complexity_index, 
-                                 output_db=output_db, 
-                                 pm_pbar=True, 
-                                 pm_chunksize=3)
-            iter = 0
-            with SqliteDict(output_db, autocommit=False) as results_dict:
-                for (score, soln) in results:
-                    iter = iter + 1                
-                    results_dict[soln] = score
-                    print("Saving progress: " + str(iter/num_solns), end='\r')
-                results_dict.commit()      
-            for result in results:
-                iter = iter + 1
-                score = result[0]
-                if score > max_score:
-                    max_score = score
-                if iter % frequency_printing == 0:
-                    print("best score of this run:" + str(max_score), 
-                          'iteration:'+ str(iter), end='\r')
+                                 queue=queue, pm_pbar=True, pm_chunksize=3)
+            runner.join()
         elif multiproc == False:
             for soln in enum.uniform_random_global_search(
                                                   maximum_tree_complexity_index, 
                                                    n_iters, seed=deterministic):
-                score = main(soln, output_db)[0]
+                score = main(soln)[0]
                 pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
                 if score > max_score:
