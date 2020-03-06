@@ -187,13 +187,6 @@ optional arguments:
                         (default: False)
 ```
 
-For example, running `winpty python ant.py ./test.db -deterministic True`
-resulted in the following best solution: 
-
-```
-prog3(ant.if_food_ahead(prog2(ant.turn_right(),ant.move_forward()),ant.if_food_ahead(ant.turn_left(),ant.turn_right())),prog3(ant.move_forward(),ant.move_forward(),prog3(ant.move_forward(),ant.turn_left(),ant.move_forward())),prog2(prog3(ant.move_forward(),ant.move_forward(),ant.move_forward()),prog3(ant.move_forward(),ant.move_forward(),ant.move_forward())))
-```
-
 As an illustrative example for the use of the terminal interface, consider the 
 following case. Suppose we want to consider only the first 1000 n-ary tree 
 structures, and we want to randomly sample 1000 different search strategies. 
@@ -218,6 +211,14 @@ winpty python ant.py -num_trees 20 -exhaustive True -multiprocessing True ./test
 During runs with `exhaustive` set to true, the code prompts the user to check over 
 the number of possible configurations and, only after reviewing, confirm that they 
 wish to proceed with the computations. 
+
+Lastly, if we want to make a run of the script reproducible, we make sure to include the 
+deterministic flag. For example, running `winpty python ant.py ./test.db -deterministic True`
+resulted in the following best solution: 
+
+```
+prog3(ant.if_food_ahead(prog2(ant.turn_right(),ant.move_forward()),ant.if_food_ahead(ant.turn_left(),ant.turn_right())),prog3(ant.move_forward(),ant.move_forward(),prog3(ant.move_forward(),ant.turn_left(),ant.move_forward())),prog2(prog3(ant.move_forward(),ant.move_forward(),ant.move_forward()),prog3(ant.move_forward(),ant.move_forward(),ant.move_forward())))
+```
 
 ## API
 
