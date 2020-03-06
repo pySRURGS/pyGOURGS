@@ -146,7 +146,10 @@ search strategies considered from the database file.
 
 Users who wish to try out the completed script can run the bash script and refer 
 to the help. Make sure to execute `ant.py` only when the current working directory 
-is `/examples` because the script imports `pyGOURGS.py` using relative paths.
+is `/examples` because the script imports `pyGOURGS.py` using relative paths. The 
+command line interface is specified in the bash `man` page format below. Users 
+unfamiliar with the interpretation of the `man` page can jump past it for 
+illustrative examples.
 
 ```
 $ winpty python ant.py -h
