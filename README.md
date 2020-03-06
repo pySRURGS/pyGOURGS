@@ -183,6 +183,17 @@ resulted in the following best solution:
 prog3(ant.if_food_ahead(prog2(ant.turn_right(),ant.move_forward()),ant.if_food_ahead(ant.turn_left(),ant.turn_right())),prog3(ant.move_forward(),ant.move_forward(),prog3(ant.move_forward(),ant.turn_left(),ant.move_forward())),prog2(prog3(ant.move_forward(),ant.move_forward(),ant.move_forward()),prog3(ant.move_forward(),ant.move_forward(),ant.move_forward())))
 ```
 
+As an illustrative example for the use of the terminal interface, consider the 
+following case. Suppose we want to consider only the first 1000 n-ary tree 
+structures, and we want to randomly sample 100000 different search strategies. 
+Since we have many computations to consider, we want to run the computations 
+using all the cores of our CPU through multiprocessing. We can then use the bash 
+interface as follows:
+
+```
+winpty python ant.py -NUM_TREES 1000 -NUM_ITERS 100000 -MULTIPROCESSING True ./test.db 
+```
+
 ## API
 
 [Documentation](https://pysrurgs.github.io/pyGOURGS/)
