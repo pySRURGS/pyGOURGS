@@ -44,6 +44,8 @@ pip install -r requirements.txt --user
 
 ### An Example: The Artificial Ant Problem
 
+#### Background
+
 The artificial ant problem is one in which we identify a search strategy for an ant searching 
 for breadcrumbs to eat. The crumbs are distributed in a path within a 32 x 32 grid. 
 The better the solution, the more pieces of food are eaten by the end of the simulation.
@@ -71,6 +73,8 @@ executed. These functions are PROGN2, PROGN3, and IF_FOOD_AHEAD.
 Each base operation takes one unit of time to perform. In the included example, 
 the simulation stops running after 600 time units.
 
+#### Running the script
+
 In the `examples/ant.py` file, we run a search for the ideal search strategy 
 using uniform random global search. For the following sections, we refer to code
 from the `examples/ant.py` file. 
@@ -81,6 +85,8 @@ run for 600 time steps.
 ```    
 ant = AntSimulator(600)
 ```
+
+#### Leveraging the pyGOURGS library
 
 We then define the primitives to be used in this problem. Primitives that are 
 housed in the terminal nodes of the tree are dubbed `terminals` (or variables)
@@ -135,6 +141,8 @@ being selected.
 
 After the script is run, the `ResultList` class is used to retrieve the top five 
 search strategies considered from the database file.
+
+#### Using the ant.py script using command line interface 
 
 Users who wish to try out the completed script can run the bash script and refer 
 to the help. Make sure to execute `ant.py` only when the current working directory 
