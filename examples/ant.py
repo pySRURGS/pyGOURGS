@@ -115,13 +115,14 @@ def solution_saving_worker(queue, n_items, output_db):
         Takes solutions from the queue of evaluated solutions, 
         then saves them to the database.
     """
-    checkpoint = int(n_items/10) + 1
+    checkpoint = int(n_items/100) + 1
     with SqliteDict(output_db, autocommit=False) as results_dict:
         for j in range(0, n_items):
             [score, soln] = queue.get()
             results_dict[soln] = score
             if j == checkpoint:
-                print('Saving results to db: ' + str(j/n_items))
+                print('  Saving results to db: ' + str(j/n_items))
+                results_dict.commit()
         results_dict.commit()
 
 def evalArtificialAnt(search_strategy_string):

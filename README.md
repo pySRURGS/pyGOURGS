@@ -185,14 +185,28 @@ prog3(ant.if_food_ahead(prog2(ant.turn_right(),ant.move_forward()),ant.if_food_a
 
 As an illustrative example for the use of the terminal interface, consider the 
 following case. Suppose we want to consider only the first 1000 n-ary tree 
-structures, and we want to randomly sample 100000 different search strategies. 
+structures, and we want to randomly sample 1000 different search strategies. 
 Since we have many computations to consider, we want to run the computations 
 using all the cores of our CPU through multiprocessing. We can then use the bash 
 interface as follows:
 
 ```
-winpty python ant.py -NUM_TREES 1000 -NUM_ITERS 100000 -MULTIPROCESSING True ./test.db 
+winpty python ant.py -num_trees 1000 -num_iters 1000 -multiprocessing True ./test.db 
 ```
+
+Now, suppose we want to know whether there are simple, good performing search 
+strategies. We can restrict ourselves to only the first few n-ary tree 
+structures, say the first 20. Then there would be a relative small number of 
+search possible strategies, so we could consider all strategies through an 
+exhaustive search. We can use the following to run this exhaustive search.
+
+```
+winpty python ant.py -num_trees 20 -exhaustive True -multiprocessing True ./test_exhaustive.db
+```
+
+During runs with `exhaustive` set to true, the code prompts the user to check over 
+the number of possible configurations and, only after reviewing, confirm that they 
+wish to proceed with the computations. 
 
 ## API
 

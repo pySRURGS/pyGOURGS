@@ -17,6 +17,8 @@ import sys
 from sqlitedict import SqliteDict
 import tabulate
 
+cache_size=10000
+
 class InvalidOperatorIndex(Exception):
     pass
 
@@ -399,7 +401,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def ith_n_ary_tree(self, i):
         """
         Generates the `i`th n-ary tree.
@@ -440,7 +442,7 @@ class Enumerator(object):
             tree = '[' + ','.join(subtrees) + ']'
         return tree
     
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_l_i_b(self, i, b):
         """
         Calculates the number of nonterminal nodes, with arity `arities[b]` in 
@@ -482,7 +484,7 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_G_i_b(self, i, b):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -508,7 +510,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_all_G_i_b(self, i):
         """
         Calculates the number of possible configurations of operators of arity 
@@ -533,7 +535,7 @@ class Enumerator(object):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_R_i(self, i):
         """
         Calculates the number of possible configurations of operators in the 
@@ -560,7 +562,7 @@ class Enumerator(object):
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_a_i(self, i):
         """
         Calculates the number of terminals in the `i`th tree
@@ -594,7 +596,7 @@ class Enumerator(object):
                 a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_S_i(self, i):
         """
         Calculates the number of possible configurations of terminals in the 
@@ -617,7 +619,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_Q(self, N):
         """
         Calculates the number of total number of solutions in the solution space
@@ -926,7 +928,7 @@ class ResultList(object):
             n_nodes = count_nodes_in_tree(self._results[i]._input)
             self._results[i]._nodes = n_nodes
         
-    def print(self, top=2):
+    def print(self, top=5):
         """
         Prints the score for the top results in the database. Run `self.sort` prior 
         to executing `self.print`.
