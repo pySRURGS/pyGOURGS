@@ -25,7 +25,7 @@ and computational optimization.
 3. Can also run an exhaustive/brute-force search
 4. Class instance level memoization of methods for speed
 5. API is similar to that of the popular DEAP genetic programming software
-6. Example script for the Artificial Ant problem, Multiplexer, and Even Parity problems.
+6. Example script for the Artificial Ant problem.
 
 ## Getting Started
 
