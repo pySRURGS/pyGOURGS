@@ -37,9 +37,9 @@ and modify it to allow for enumeration of n-ary trees. The enumeration algorithm
 use is flexible, modifying its enumeration depending on the arity of the 
 functions that the user supplies and the number of variables that the user 
 supplies. Uniform random global search is proven to converge on the ideal 
-solution as the number of iterations tends to infinity, and this is intuitive 
-because with infinite repetitions the algorithm reduces to an exhaustive search 
-[@Solis:2012]. The software comes with three ready examples derived from the 
+solution as the number of iterations tends to infinity[@Solis:2012], and this is 
+intuitive because with infinite repetitions the algorithm reduces to an 
+exhaustive search. The software comes with three ready examples derived from the 
 popular DEAP software [@fortin2012deap]. These include the artificial ant 
 problem, the even parity problem, and the multiplexer problem. The software 
 is the successor to our earlier work [@towfighi2019pysrurgs], but uses a 
