@@ -5,6 +5,7 @@
 [![License: GPL v3](image/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![python versions](image/python-3_6_3_7-blue.svg)](https://www.python.org)
 [![status](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa/status.svg)](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa)
+[![DOI](https://zenodo.org/badge/223265114.svg)](https://zenodo.org/badge/latestdoi/223265114)
 
 # Global Optimization by Uniform Random Global Search
 
