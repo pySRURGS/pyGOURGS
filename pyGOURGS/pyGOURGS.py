@@ -502,7 +502,8 @@ class Enumerator(object):
         Returns
         -------
         G_i_b : int
-            the number of possible configurations of operators of arity `arities`[b]
+            the number of possible configurations of operators of arity 
+            `arities`[b]
         """
         arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
@@ -700,7 +701,7 @@ class Enumerator(object):
             arity = arities[b]
             l_i_b = self.calculate_l_i_b(i, b)
             config = get_element_of_cartesian_product(pset._operators[arity],
-                                                           repeat=l_i_b, index=z)
+                                                          repeat=l_i_b, index=z)
             operator_config.append(config)
         # generate the terminal configuration
         a_i = self.calculate_a_i(i)
@@ -918,7 +919,8 @@ class ResultList(object):
         Sorts the results in the result list by decreasing value of mean squared 
         error.
         """
-        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+        self._results = sorted(self._results, key=lambda x: x._score, 
+                               reverse=True)
 
     def count_nodes(self):
         """
@@ -930,8 +932,8 @@ class ResultList(object):
         
     def print(self, top=2):
         """
-        Prints the score for the top results in the database. Run `self.sort` prior 
-        to executing `self.print`.
+        Prints the score for the top results in the database. Run `self.sort` 
+        prior to executing `self.print`.
         
         Parameters
         ----------
@@ -953,4 +955,14 @@ class ResultList(object):
         print(table_string)
 
 
-    
+if __name__ == '__main__':
+    ps = PrimitiveSet()
+    ps.add_operator('add', 2)
+    ps.add_operator('sub', 2)
+    ps.add_operator('div', 2)
+    ps.add_operator('cos', 1)
+    ps.add_operator('progn3', 3)
+    ps.add_variable('x')
+    ps.add_variable('y')
+    en = Enumerator(ps)
+    en.uniform_random_global_search_once(1000)
