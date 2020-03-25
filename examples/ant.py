@@ -256,7 +256,7 @@ if __name__ == "__main__":
         num_solns = n_iters
         if multiproc == True:
             current_time = int(time.time())
-            seeds = np.arange(0,n_iters)
+            seeds = np.arange(0, n_iters)
             seeds = seeds*current_time
             seeds = seeds.tolist()
             runner = mp.Process(target=solution_saving_worker, 
