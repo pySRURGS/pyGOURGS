@@ -589,12 +589,15 @@ class Enumerator(object):
         else:
             e, j = divmod(i-1, k) 
             m = arities[j]
-            e_base_arity = decimal_to_base_m(e, m)
-            list_bits = deinterleave(e_base_arity, m)
-            list_bits_deci = [base_m_to_decimal(u, m) \
-                                 for u in list_bits]
-            for i_deinterleaved in list_bits_deci:
-                a_i = a_i + self.calculate_a_i(i_deinterleaved)                
+            if m == 1:
+                a_i = self.calculate_a_i(e)
+            else:
+                e_base_arity = decimal_to_base_m(e, m)
+                list_bits = deinterleave(e_base_arity, m)
+                list_bits_deci = [base_m_to_decimal(u, m) \
+                                     for u in list_bits]
+                for i_deinterleaved in list_bits_deci:
+                    a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
     @mt_lru_cache(maxsize=cache_size)
@@ -817,7 +820,8 @@ class Enumerator(object):
                     candidate_solution = self.generate_specified_solution(i,
                                                                     r, s, N)                    
                     yield candidate_solution
-        
+
+                    
 def compile(expr, pset):
     """
     Compiles the `expr` expression
@@ -965,4 +969,4 @@ if __name__ == '__main__':
     ps.add_variable('x')
     ps.add_variable('y')
     en = Enumerator(ps)
-    en.uniform_random_global_search_once(1000)
+    print(en.uniform_random_global_search_once(1000))
