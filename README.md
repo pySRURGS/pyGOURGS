@@ -235,7 +235,9 @@ This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE.t
 
 ## How to Cite
 
-If you use this software in your research, then please cite our papers.
+If you use this software in your research, then please cite us.
+
+Towfighi, S., (2020). pyGOURGS - global optimization of n-ary tree representable problems using uniform random global search. Journal of Open Source Software, 5(47), 2074, https://doi.org/10.21105/joss.02074
 
 ## Community
 
