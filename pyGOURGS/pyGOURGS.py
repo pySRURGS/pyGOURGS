@@ -445,8 +445,8 @@ class Enumerator(object):
     @mt_lru_cache(maxsize=cache_size)
     def calculate_l_i_b(self, i, b):
         """
-        Calculates the number of nonterminal nodes, with arity `arities[b]` in 
-        tree `i`, called l_i_b
+        Calculates the number of nonterminal nodes with arity `arities[b]` in 
+        tree `i`
 
         Parameters
         ----------
