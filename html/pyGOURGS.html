@@ -406,7 +406,6 @@ def deinterleave(num, m):
     Returns
     -------
     m_elements : list of integers
-
     &#34;&#34;&#34;
     m_elements = []
     for i in range(0,m):
@@ -452,7 +451,7 @@ class Enumerator(object):
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            The n-ary tree as a string where `..` denotes terminal, and [ ] 
             define an operator.
         &#34;&#34;&#34;        
         arities = self._pset.get_arities()
@@ -1278,7 +1277,6 @@ Eg: if <code>m</code> were 2, we would be returning the odd and even bits of the
     Returns
     -------
     m_elements : list of integers
-
     &#34;&#34;&#34;
     m_elements = []
     for i in range(0,m):
@@ -1546,7 +1544,7 @@ for the 'best_result' key</p></section>
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            The n-ary tree as a string where `..` denotes terminal, and [ ] 
             define an operator.
         &#34;&#34;&#34;        
         arities = self._pset.get_arities()
@@ -2521,7 +2519,7 @@ trees</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>tree</code></strong> :&ensp;<code>string</code></dt>
-<dd>The n-ary tree as a string where <code>.</code> denotes terminal, and [ ]
+<dd>The n-ary tree as a string where <code>..</code> denotes terminal, and [ ]
 define an operator.</dd>
 </dl></section>
 <details class="source">
@@ -2545,7 +2543,7 @@ def ith_n_ary_tree(self, i):
     Returns
     -------
     tree: string
-        The n-ary tree as a string where `.` denotes terminal, and [ ] 
+        The n-ary tree as a string where `..` denotes terminal, and [ ] 
         define an operator.
     &#34;&#34;&#34;        
     arities = self._pset.get_arities()

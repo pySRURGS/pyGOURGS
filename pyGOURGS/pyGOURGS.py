@@ -372,7 +372,6 @@ def deinterleave(num, m):
     Returns
     -------
     m_elements : list of integers
-
     """
     m_elements = []
     for i in range(0,m):
@@ -418,7 +417,7 @@ class Enumerator(object):
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            The n-ary tree as a string where `..` denotes terminal, and [ ] 
             define an operator.
         """        
         arities = self._pset.get_arities()
