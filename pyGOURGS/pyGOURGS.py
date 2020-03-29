@@ -678,7 +678,7 @@ class Enumerator(object):
             
         Returns
         -------
-        solution: int
+        solution: str
             The candidate solution generated from the supplied indices
         """
         terminals = self._pset.get_terminals()    
