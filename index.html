@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.2" />
+<meta name="generator" content="pdoc 0.7.4" />
 <title>pyGOURGS API documentation</title>
 <meta name="description" content="pyGOURGS - Global Optimization by Uniform Random Global Search;
 Sohrab Towfighi (C) 2020;
@@ -50,6 +50,8 @@ import pdb
 import sys
 from sqlitedict import SqliteDict
 import tabulate
+
+cache_size=10000
 
 class InvalidOperatorIndex(Exception):
     pass
@@ -404,7 +406,6 @@ def deinterleave(num, m):
     Returns
     -------
     m_elements : list of integers
-
     &#34;&#34;&#34;
     m_elements = []
     for i in range(0,m):
@@ -433,7 +434,7 @@ class Enumerator(object):
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -450,7 +451,7 @@ class Enumerator(object):
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            The n-ary tree as a string where `..` denotes terminal, and [ ] 
             define an operator.
         &#34;&#34;&#34;        
         arities = self._pset.get_arities()
@@ -474,11 +475,11 @@ class Enumerator(object):
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
     
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
-        Calculates the number of nonterminal nodes, with arity `arities[b]` in 
-        tree `i`, called l_i_b
+        Calculates the number of nonterminal nodes with arity `arities[b]` in 
+        tree `i`
 
         Parameters
         ----------
@@ -516,7 +517,7 @@ class Enumerator(object):
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -534,7 +535,8 @@ class Enumerator(object):
         Returns
         -------
         G_i_b : int
-            the number of possible configurations of operators of arity `arities`[b]
+            the number of possible configurations of operators of arity 
+            `arities`[b]
         &#34;&#34;&#34;
         arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
@@ -542,7 +544,7 @@ class Enumerator(object):
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -567,7 +569,7 @@ class Enumerator(object):
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -594,7 +596,7 @@ class Enumerator(object):
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -620,15 +622,18 @@ class Enumerator(object):
         else:
             e, j = divmod(i-1, k) 
             m = arities[j]
-            e_base_arity = decimal_to_base_m(e, m)
-            list_bits = deinterleave(e_base_arity, m)
-            list_bits_deci = [base_m_to_decimal(u, m) \
-                                 for u in list_bits]
-            for i_deinterleaved in list_bits_deci:
-                a_i = a_i + self.calculate_a_i(i_deinterleaved)                
+            if m == 1:
+                a_i = self.calculate_a_i(e)
+            else:
+                e_base_arity = decimal_to_base_m(e, m)
+                list_bits = deinterleave(e_base_arity, m)
+                list_bits_deci = [base_m_to_decimal(u, m) \
+                                     for u in list_bits]
+                for i_deinterleaved in list_bits_deci:
+                    a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -651,7 +656,7 @@ class Enumerator(object):
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -706,7 +711,7 @@ class Enumerator(object):
             
         Returns
         -------
-        solution: int
+        solution: str
             The candidate solution generated from the supplied indices
         &#34;&#34;&#34;
         terminals = self._pset.get_terminals()    
@@ -732,7 +737,7 @@ class Enumerator(object):
             arity = arities[b]
             l_i_b = self.calculate_l_i_b(i, b)
             config = get_element_of_cartesian_product(pset._operators[arity],
-                                                           repeat=l_i_b, index=z)
+                                                          repeat=l_i_b, index=z)
             operator_config.append(config)
         # generate the terminal configuration
         a_i = self.calculate_a_i(i)
@@ -848,7 +853,8 @@ class Enumerator(object):
                     candidate_solution = self.generate_specified_solution(i,
                                                                     r, s, N)                    
                     yield candidate_solution
-        
+
+                    
 def compile(expr, pset):
     &#34;&#34;&#34;
     Compiles the `expr` expression
@@ -950,7 +956,8 @@ class ResultList(object):
         Sorts the results in the result list by decreasing value of mean squared 
         error.
         &#34;&#34;&#34;
-        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+        self._results = sorted(self._results, key=lambda x: x._score, 
+                               reverse=True)
 
     def count_nodes(self):
         &#34;&#34;&#34;
@@ -962,8 +969,8 @@ class ResultList(object):
         
     def print(self, top=2):
         &#34;&#34;&#34;
-        Prints the score for the top results in the database. Run `self.sort` prior 
-        to executing `self.print`.
+        Prints the score for the top results in the database. Run `self.sort` 
+        prior to executing `self.print`.
         
         Parameters
         ----------
@@ -985,7 +992,17 @@ class ResultList(object):
         print(table_string)
 
 
-    </code></pre>
+if __name__ == &#39;__main__&#39;:
+    ps = PrimitiveSet()
+    ps.add_operator(&#39;add&#39;, 2)
+    ps.add_operator(&#39;sub&#39;, 2)
+    ps.add_operator(&#39;div&#39;, 2)
+    ps.add_operator(&#39;cos&#39;, 1)
+    ps.add_operator(&#39;progn3&#39;, 3)
+    ps.add_variable(&#39;x&#39;)
+    ps.add_variable(&#39;y&#39;)
+    en = Enumerator(ps)
+    print(en.uniform_random_global_search_once(1000))</code></pre>
 </details>
 </section>
 <section>
@@ -1260,7 +1277,6 @@ Eg: if <code>m</code> were 2, we would be returning the odd and even bits of the
     Returns
     -------
     m_elements : list of integers
-
     &#34;&#34;&#34;
     m_elements = []
     for i in range(0,m):
@@ -1511,7 +1527,7 @@ for the 'best_result' key</p></section>
         self._operators = self._pset._operators
         self._arities = self._pset.get_arities()
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def ith_n_ary_tree(self, i):
         &#34;&#34;&#34;
         Generates the `i`th n-ary tree.
@@ -1528,7 +1544,7 @@ for the 'best_result' key</p></section>
         Returns
         -------
         tree: string
-            The n-ary tree as a string where `.` denotes terminal, and [ ] 
+            The n-ary tree as a string where `..` denotes terminal, and [ ] 
             define an operator.
         &#34;&#34;&#34;        
         arities = self._pset.get_arities()
@@ -1552,11 +1568,11 @@ for the 'best_result' key</p></section>
             tree = &#39;[&#39; + &#39;,&#39;.join(subtrees) + &#39;]&#39;
         return tree
     
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_l_i_b(self, i, b):
         &#34;&#34;&#34;
-        Calculates the number of nonterminal nodes, with arity `arities[b]` in 
-        tree `i`, called l_i_b
+        Calculates the number of nonterminal nodes with arity `arities[b]` in 
+        tree `i`
 
         Parameters
         ----------
@@ -1594,7 +1610,7 @@ for the 'best_result' key</p></section>
                 l_i_b = l_i_b + self.calculate_l_i_b(i_deinterleaved, b)
         return l_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_G_i_b(self, i, b):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -1612,7 +1628,8 @@ for the 'best_result' key</p></section>
         Returns
         -------
         G_i_b : int
-            the number of possible configurations of operators of arity `arities`[b]
+            the number of possible configurations of operators of arity 
+            `arities`[b]
         &#34;&#34;&#34;
         arities = self._pset.get_arities()
         f_b = len(self._operators[arities[b]])
@@ -1620,7 +1637,7 @@ for the 'best_result' key</p></section>
         G_i_b = mempower(f_b, l_i_b)
         return G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_all_G_i_b(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators of arity 
@@ -1645,7 +1662,7 @@ for the 'best_result' key</p></section>
             list_G_i_b.append(self.calculate_G_i_b(i, b))
         return list_G_i_b
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_R_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of operators in the 
@@ -1672,7 +1689,7 @@ for the 'best_result' key</p></section>
                 R_i = R_i * G_i_b
         return R_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_a_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of terminals in the `i`th tree
@@ -1698,15 +1715,18 @@ for the 'best_result' key</p></section>
         else:
             e, j = divmod(i-1, k) 
             m = arities[j]
-            e_base_arity = decimal_to_base_m(e, m)
-            list_bits = deinterleave(e_base_arity, m)
-            list_bits_deci = [base_m_to_decimal(u, m) \
-                                 for u in list_bits]
-            for i_deinterleaved in list_bits_deci:
-                a_i = a_i + self.calculate_a_i(i_deinterleaved)                
+            if m == 1:
+                a_i = self.calculate_a_i(e)
+            else:
+                e_base_arity = decimal_to_base_m(e, m)
+                list_bits = deinterleave(e_base_arity, m)
+                list_bits_deci = [base_m_to_decimal(u, m) \
+                                     for u in list_bits]
+                for i_deinterleaved in list_bits_deci:
+                    a_i = a_i + self.calculate_a_i(i_deinterleaved)                
         return a_i
         
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_S_i(self, i):
         &#34;&#34;&#34;
         Calculates the number of possible configurations of terminals in the 
@@ -1729,7 +1749,7 @@ for the 'best_result' key</p></section>
         S_i = mempower(m, j_i)
         return S_i
 
-    @mt_lru_cache(maxsize=1248)
+    @mt_lru_cache(maxsize=cache_size)
     def calculate_Q(self, N):
         &#34;&#34;&#34;
         Calculates the number of total number of solutions in the solution space
@@ -1784,7 +1804,7 @@ for the 'best_result' key</p></section>
             
         Returns
         -------
-        solution: int
+        solution: str
             The candidate solution generated from the supplied indices
         &#34;&#34;&#34;
         terminals = self._pset.get_terminals()    
@@ -1810,7 +1830,7 @@ for the 'best_result' key</p></section>
             arity = arities[b]
             l_i_b = self.calculate_l_i_b(i, b)
             config = get_element_of_cartesian_product(pset._operators[arity],
-                                                           repeat=l_i_b, index=z)
+                                                          repeat=l_i_b, index=z)
             operator_config.append(config)
         # generate the terminal configuration
         a_i = self.calculate_a_i(i)
@@ -1964,13 +1984,14 @@ trees</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>G_i_b</code></strong> :&ensp;<code>int</code></dt>
-<dd>the number of possible configurations of operators of arity <code>arities</code>[b]</dd>
+<dd>the number of possible configurations of operators of arity
+<code>arities</code>[b]</dd>
 </dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_G_i_b(self, i, b):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
@@ -1988,7 +2009,8 @@ def calculate_G_i_b(self, i, b):
     Returns
     -------
     G_i_b : int
-        the number of possible configurations of operators of arity `arities`[b]
+        the number of possible configurations of operators of arity 
+        `arities`[b]
     &#34;&#34;&#34;
     arities = self._pset.get_arities()
     f_b = len(self._operators[arities[b]])
@@ -2016,7 +2038,7 @@ def calculate_G_i_b(self, i, b):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_Q(self, N):
     &#34;&#34;&#34;
     Calculates the number of total number of solutions in the solution space
@@ -2070,7 +2092,7 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_R_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators in the 
@@ -2120,7 +2142,7 @@ tree</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_S_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of terminals in the 
@@ -2164,7 +2186,7 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_a_i(self, i):
     &#34;&#34;&#34;
     Calculates the number of terminals in the `i`th tree
@@ -2190,12 +2212,15 @@ def calculate_a_i(self, i):
     else:
         e, j = divmod(i-1, k) 
         m = arities[j]
-        e_base_arity = decimal_to_base_m(e, m)
-        list_bits = deinterleave(e_base_arity, m)
-        list_bits_deci = [base_m_to_decimal(u, m) \
-                             for u in list_bits]
-        for i_deinterleaved in list_bits_deci:
-            a_i = a_i + self.calculate_a_i(i_deinterleaved)                
+        if m == 1:
+            a_i = self.calculate_a_i(e)
+        else:
+            e_base_arity = decimal_to_base_m(e, m)
+            list_bits = deinterleave(e_base_arity, m)
+            list_bits_deci = [base_m_to_decimal(u, m) \
+                                 for u in list_bits]
+            for i_deinterleaved in list_bits_deci:
+                a_i = a_i + self.calculate_a_i(i_deinterleaved)                
     return a_i</code></pre>
 </details>
 </dd>
@@ -2221,7 +2246,7 @@ of arity <code>arities</code>[b]</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_all_G_i_b(self, i):
     &#34;&#34;&#34;
     Calculates the number of possible configurations of operators of arity 
@@ -2251,8 +2276,8 @@ def calculate_all_G_i_b(self, i):
 <span>def <span class="ident">calculate_l_i_b</span></span>(<span>self, i, b)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Calculates the number of nonterminal nodes, with arity <code>arities[b]</code> in
-tree <code>i</code>, called l_i_b</p>
+<section class="desc"><p>Calculates the number of nonterminal nodes with arity <code>arities[b]</code> in
+tree <code>i</code></p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>i</code></strong> :&ensp;<code>int</code></dt>
@@ -2270,11 +2295,11 @@ trees</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def calculate_l_i_b(self, i, b):
     &#34;&#34;&#34;
-    Calculates the number of nonterminal nodes, with arity `arities[b]` in 
-    tree `i`, called l_i_b
+    Calculates the number of nonterminal nodes with arity `arities[b]` in 
+    tree `i`
 
     Parameters
     ----------
@@ -2395,7 +2420,7 @@ of the terminals</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>solution</code></strong> :&ensp;<code>int</code></dt>
+<dt><strong><code>solution</code></strong> :&ensp;<code>str</code></dt>
 <dd>The candidate solution generated from the supplied indices</dd>
 </dl></section>
 <details class="source">
@@ -2426,7 +2451,7 @@ of the terminals</dd>
         
     Returns
     -------
-    solution: int
+    solution: str
         The candidate solution generated from the supplied indices
     &#34;&#34;&#34;
     terminals = self._pset.get_terminals()    
@@ -2452,7 +2477,7 @@ of the terminals</dd>
         arity = arities[b]
         l_i_b = self.calculate_l_i_b(i, b)
         config = get_element_of_cartesian_product(pset._operators[arity],
-                                                       repeat=l_i_b, index=z)
+                                                      repeat=l_i_b, index=z)
         operator_config.append(config)
     # generate the terminal configuration
     a_i = self.calculate_a_i(i)
@@ -2494,14 +2519,14 @@ trees</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>tree</code></strong> :&ensp;<code>string</code></dt>
-<dd>The n-ary tree as a string where <code>.</code> denotes terminal, and [ ]
+<dd>The n-ary tree as a string where <code>..</code> denotes terminal, and [ ]
 define an operator.</dd>
 </dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@mt_lru_cache(maxsize=1248)
+<pre><code class="python">@mt_lru_cache(maxsize=cache_size)
 def ith_n_ary_tree(self, i):
     &#34;&#34;&#34;
     Generates the `i`th n-ary tree.
@@ -2518,7 +2543,7 @@ def ith_n_ary_tree(self, i):
     Returns
     -------
     tree: string
-        The n-ary tree as a string where `.` denotes terminal, and [ ] 
+        The n-ary tree as a string where `..` denotes terminal, and [ ] 
         define an operator.
     &#34;&#34;&#34;        
     arities = self._pset.get_arities()
@@ -2651,7 +2676,7 @@ to run the algorithm deterministically.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidOperatorIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidOperatorIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -2670,7 +2695,7 @@ to run the algorithm deterministically.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidTerminalIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidTerminalIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -2689,7 +2714,7 @@ to run the algorithm deterministically.</dd>
 </dd>
 <dt id="pyGOURGS.InvalidTreeIndex"><code class="flex name class">
 <span>class <span class="ident">InvalidTreeIndex</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>...)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
@@ -3181,7 +3206,8 @@ but will eventually be evaluated to whatever results from
         Sorts the results in the result list by decreasing value of mean squared 
         error.
         &#34;&#34;&#34;
-        self._results = sorted(self._results, key=lambda x: x._score, reverse=True)
+        self._results = sorted(self._results, key=lambda x: x._score, 
+                               reverse=True)
 
     def count_nodes(self):
         &#34;&#34;&#34;
@@ -3193,8 +3219,8 @@ but will eventually be evaluated to whatever results from
         
     def print(self, top=2):
         &#34;&#34;&#34;
-        Prints the score for the top results in the database. Run `self.sort` prior 
-        to executing `self.print`.
+        Prints the score for the top results in the database. Run `self.sort` 
+        prior to executing `self.print`.
         
         Parameters
         ----------
@@ -3260,8 +3286,8 @@ but will eventually be evaluated to whatever results from
 <span>def <span class="ident">print</span></span>(<span>self, top=2)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Prints the score for the top results in the database. Run <code>self.sort</code> prior
-to executing <code>self.print</code>.</p>
+<section class="desc"><p>Prints the score for the top results in the database. Run <code>self.sort</code>
+prior to executing <code>self.print</code>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>top</code></strong> :&ensp;<code>int</code></dt>
@@ -3279,8 +3305,8 @@ to executing <code>self.print</code>.</p>
 </summary>
 <pre><code class="python">def print(self, top=2):
     &#34;&#34;&#34;
-    Prints the score for the top results in the database. Run `self.sort` prior 
-    to executing `self.print`.
+    Prints the score for the top results in the database. Run `self.sort` 
+    prior to executing `self.print`.
     
     Parameters
     ----------
@@ -3317,7 +3343,8 @@ error.</p></section>
     Sorts the results in the result list by decreasing value of mean squared 
     error.
     &#34;&#34;&#34;
-    self._results = sorted(self._results, key=lambda x: x._score, reverse=True)</code></pre>
+    self._results = sorted(self._results, key=lambda x: x._score, 
+                           reverse=True)</code></pre>
 </details>
 </dd>
 </dl>
@@ -3409,7 +3436,7 @@ error.</p></section>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.4</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>

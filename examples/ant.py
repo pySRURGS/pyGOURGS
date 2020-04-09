@@ -10,6 +10,7 @@ import multiprocessing as mp
 import parmap
 import tqdm
 import sys,os
+import time
 sys.path.append(os.path.join('..', 'pyGOURGS'))
 import pyGOURGS as pg
 import argparse 
@@ -254,7 +255,10 @@ if __name__ == "__main__":
     elif exhaustive == False:
         num_solns = n_iters
         if multiproc == True:
-            seeds = list(range(0,n_iters))
+            current_time = int(time.time())
+            seeds = np.arange(0, n_iters)
+            seeds = seeds*current_time
+            seeds = seeds.tolist()
             runner = mp.Process(target=solution_saving_worker, 
                              args=(queue, num_solns, output_db))
             runner.start()
