@@ -24,9 +24,8 @@ and computational optimization.
 1. Developed and tested on Python 3.6
 2. Can be run in deterministic mode for reproducibility
 3. Can also run an exhaustive/brute-force search
-4. Class instance level memoization of methods for speed
-5. API is similar to that of the popular DEAP genetic programming software
-6. Example script for the Artificial Ant problem.
+4. API is similar to that of the popular DEAP genetic programming software
+5. Example script for the Artificial Ant problem.
 
 ## Getting Started
 
