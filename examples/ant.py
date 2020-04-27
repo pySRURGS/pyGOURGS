@@ -10,8 +10,13 @@ import multiprocessing as mp
 import parmap
 import tqdm
 import sys,os
+pygourgs_dir = os.path.join('..', 'pyGOURGS')
+if os.path.isfile(os.path.join(pygourgs_dir, 'pyGOURGS.py')) == False:
+    msg = "Could not find pyGOURGS.py"
+    msg += " Run ant.py from within the examples directory."
+    raise Exception(msg)
 import time
-sys.path.append(os.path.join('..', 'pyGOURGS'))
+sys.path.append(pygourgs_dir)
 import pyGOURGS as pg
 import argparse 
 from sqlitedict import SqliteDict
