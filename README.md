@@ -1,4 +1,4 @@
-![Binoculars](image/pyGOURGS.svg)
+![Binoculars](image/pygourgs.png)
 
 [![Build Status](https://travis-ci.org/pySRURGS/pyGOURGS.svg?branch=master)](https://travis-ci.org/pySRURGS/pyGOURGS)
 [![status](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa/status.svg)](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa)
