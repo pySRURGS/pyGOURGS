@@ -45,6 +45,11 @@ def evalSymbolicRegression(equation_string):
     # scope
     #   If user gives us a CSV with header x,y,z we want to ensure that 
     #   whatever these names are, we can access their arrays within this function
+    
+    # TODO we need to ensure that fitting parameters are recognized and a suitable
+    # nonlinear optimization package is used to find optimal values for these 
+    # fitting parameters. We can try Levenburg-Marquardt algorithm via the LMFIT 
+    # software https://lmfit.github.io/lmfit-py/ as was done in pySRURGS
     raise Exception("fix this")
     return value
 
