@@ -5,6 +5,8 @@ import numpy
 import pdb
 from functools import partial
 import multiprocessing as mp
+
+import pandas as pandas
 import parmap
 import tqdm
 import sys,os
@@ -122,6 +124,7 @@ if __name__ == "__main__":
     # need to also add arity 1 and arity 2
     # 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-csv_path", help="An absolute filepath of the csv that will be parsed.")
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
@@ -140,15 +143,18 @@ if __name__ == "__main__":
     deterministic = arguments.deterministic
     exhaustive = arguments.exhaustive
     multiproc = arguments.multiprocessing
+    csv_path = arguments.csv_path
+    pdb.set_trace()
+    dataframe = pandas.read_csv(csv_path)
     # TODO operators_arity_one, operators_arity_two, and list_of_variables
     # need to be defined based on user specified values
     pset = pg.PrimitiveSet()
-    for operator in operators_arity_one:
-        pset.add_operator(operator, 1)
-    for operator in operators_arity_two:
-        pset.add_operator(operator, 2)
-    for variable in list_of_variables:
-        pset.add_variable(variable)
+    # for operator in operators_arity_one:
+    #     pset.add_operator(operator, 1)
+    # for operator in operators_arity_two:
+    #     pset.add_operator(operator, 2)
+    # for variable in list_of_variables:
+    #     pset.add_variable(variable)
     enum = pg.Enumerator(pset)
     
     if deterministic == False:
@@ -196,7 +202,7 @@ if __name__ == "__main__":
         num_solns = n_iters
         if multiproc == True:
             current_time = int(time.time())
-            seeds = np.arange(0, n_iters)
+            seeds = numpy.np.arange(0, n_iters)
             seeds = seeds*current_time
             seeds = seeds.tolist()
             runner = mp.Process(target=solution_saving_worker, 
