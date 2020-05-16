@@ -39,8 +39,12 @@ def evalSymbolicRegression(equation_string):
         Evaluates the proposed solution to its numerical value
     """
     value = eval(equation_string)
+    # figure out when eval(x) x has already been created
+    # better to have dict like object instead of having multiple variable.
+    # dict keys names of varialbes, values the arrays of data
     # TODO
-    # this logic is not correct and needs to be written
+    # this logic is not correct and needs to be written. Take this quartic polynomial csv file
+    # and predict y from x. 
     # the user defined variables and fitting parameters will not be in this 
     # scope
     #   If user gives us a CSV with header x,y,z we want to ensure that 
@@ -109,9 +113,14 @@ def str2bool(v):
         
 if __name__ == "__main__":
     # TODO
+    # through terminal, user gives us path to csv, columns x,y,z
     # User needs to be able to specify operators 
     # and variables should be automatically detected from a user specified 
     # CSV file  with a header
+    # START with this terminal
+    # need to be able to specify operators. Operators of arity 1, and arity 2.
+    # need to also add arity 1 and arity 2
+    # 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
