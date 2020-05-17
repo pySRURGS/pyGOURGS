@@ -170,7 +170,6 @@ if __name__ == "__main__":
     pset = pg.PrimitiveSet()
     for operator in inputted_operators:
         customAssert(operator in operator_arity.keys(), Exception("Invalid operator entered {}. Permitted operators: add,sub,mul,div,pow,sin,cos,tan,exp,log,sinh,cosh,tanh.".format(operator)))
-        assert operator in operator_arity.keys()
         pset.add_operator(operator, operator_arity[operator])
     for variable in dataframe.columns[:-1]:
         pset.add_variable(variable)
