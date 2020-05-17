@@ -40,6 +40,7 @@ def evalSymbolicRegression(equation_string):
     """
         Evaluates the proposed solution to its numerical value
     """
+    pdb.set_trace()
     value = eval(equation_string)
     # figure out when eval(x) x has already been created
     # better to have dict like object instead of having multiple variable.
@@ -114,15 +115,7 @@ def str2bool(v):
 
         
 if __name__ == "__main__":
-    # TODO
-    # through terminal, user gives us path to csv, columns x,y,z DONE
-    # User needs to be able to specify operators TODO
-    # and variables should be automatically detected from a user specified 
-    # CSV file  with a header DONE
-    # START with this terminal
-    # need to be able to specify operators. Operators of arity 1, and arity 2.
-    # need to also add arity 1 and arity 2
-    # 
+
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-csv_path", help="An absolute filepath of the csv that will be parsed.")
     parser.add_argument("-operators", nargs='+', help="Operators used to create the solution.", required=True)
