@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-csv_path", help="An absolute filepath of the csv that will be parsed.")
-    parser.add_argument("-operators", help="Operators used to create the solution.")
+    parser.add_argument("-operators", nargs='+', help="Operators used to create the solution.", required=True)
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
