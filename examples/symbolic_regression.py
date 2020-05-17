@@ -115,16 +115,17 @@ def str2bool(v):
         
 if __name__ == "__main__":
     # TODO
-    # through terminal, user gives us path to csv, columns x,y,z
-    # User needs to be able to specify operators 
+    # through terminal, user gives us path to csv, columns x,y,z DONE
+    # User needs to be able to specify operators TODO
     # and variables should be automatically detected from a user specified 
-    # CSV file  with a header
+    # CSV file  with a header DONE
     # START with this terminal
     # need to be able to specify operators. Operators of arity 1, and arity 2.
     # need to also add arity 1 and arity 2
     # 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-csv_path", help="An absolute filepath of the csv that will be parsed.")
+    parser.add_argument("-operators", help="Operators used to create the solution.")
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         parser.print_usage()
         sys.exit(1)
+
     arguments = parser.parse_args()
     output_db = arguments.output_db
     n_iters = arguments.num_iters
@@ -144,17 +146,24 @@ if __name__ == "__main__":
     exhaustive = arguments.exhaustive
     multiproc = arguments.multiprocessing
     csv_path = arguments.csv_path
-    pdb.set_trace()
+    inputted_operators = arguments.operators
+
     dataframe = pandas.read_csv(csv_path)
-    # TODO operators_arity_one, operators_arity_two, and list_of_variables
-    # need to be defined based on user specified values
+    operator_arity = {"add": 2,
+                      "sub": 2,
+                      "div": 2,
+                      "mult": 2,
+                      "pow": 2,
+                      "exp": 1,
+                      "sin": 1,
+                      "sinh": 1}  # A dict mapping operators to their arity
+
     pset = pg.PrimitiveSet()
-    # for operator in operators_arity_one:
-    #     pset.add_operator(operator, 1)
-    # for operator in operators_arity_two:
-    #     pset.add_operator(operator, 2)
-    # for variable in list_of_variables:
-    #     pset.add_variable(variable)
+    for operator in inputted_operators:
+        assert operator in operator_arity.keys()  # Make sure the operators entered are allowed
+        pset.add_operator(operator, operator_arity[operator])
+    for variable in dataframe.columns:
+        pset.add_variable(variable)
     enum = pg.Enumerator(pset)
     
     if deterministic == False:
