@@ -40,8 +40,14 @@ def evalSymbolicRegression(equation_string):
     """
         Evaluates the proposed solution to its numerical value
     """
-    pdb.set_trace()
-    value = eval(equation_string)
+    # pdb.set_trace()
+    # QUESTION: if we're predicting y using x, only x should be considered in the equation_string?
+    # for x_value in x_column:
+        # evaluteEquation = lambda x: equation_string
+        # return evaluteEquation(1st value of x from dataframe)
+    # QUESTION: are we evaluating only one value of x from the dataframe, or somehow all the values of x? In other words, what specifically is the return value of this method?
+    # 
+    # value = eval(equation_string)
     # figure out when eval(x) x has already been created
     # better to have dict like object instead of having multiple variable.
     # dict keys names of varialbes, values the arrays of data
@@ -57,8 +63,8 @@ def evalSymbolicRegression(equation_string):
     # nonlinear optimization package is used to find optimal values for these 
     # fitting parameters. We can try Levenburg-Marquardt algorithm via the LMFIT 
     # software https://lmfit.github.io/lmfit-py/ as was done in pySRURGS
-    raise Exception("fix this")
-    return value
+    # raise Exception("fix this")
+    return 1
 
 # TODO
 # def simplify_equation_string(equation_string, ?more args):
@@ -70,6 +76,7 @@ def main_rando(seed, enum, max_tree_complx):
         evaluates a randomly generated solution
     """
     soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
+    pdb.set_trace()
     score = evalSymbolicRegression(soln)    
     return score, soln
 
@@ -118,7 +125,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-csv_path", help="An absolute filepath of the csv that will be parsed.")
-    parser.add_argument("-operators", nargs='+', help="Operators used to create the solution.", required=True)
+    parser.add_argument("-operators", nargs='+', help="Operators used to create the solution. Permitted:add,sub,mul,div,pow,sin,cos,tan,exp,log,sinh,cosh,tanh.", default=["add", "sub", "mul", "div", "pow"])
     parser.add_argument("output_db", help="An absolute filepath where we save results to a SQLite database. Include the filename. Extension is typically '.db'")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=10000)
     parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=1000)
@@ -145,11 +152,15 @@ if __name__ == "__main__":
     operator_arity = {"add": 2,
                       "sub": 2,
                       "div": 2,
-                      "mult": 2,
+                      "mul": 2,
                       "pow": 2,
                       "exp": 1,
                       "sin": 1,
-                      "sinh": 1}  # A dict mapping operators to their arity
+                      "sinh": 1,
+                      "cos": 1,
+                      "cosh": 1,
+                      "tan": 1,
+                      "tanh": 1}  # A dict mapping operators to their arity
 
     pset = pg.PrimitiveSet()
     for operator in inputted_operators:
