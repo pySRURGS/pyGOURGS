@@ -40,12 +40,15 @@ def evalSymbolicRegression(equation_string):
     """
         Evaluates the proposed solution to its numerical value
     """
+    # print(equation_string)
     # pdb.set_trace()
     # QUESTION: if we're predicting y using x, only x should be considered in the equation_string?
     # for x_value in x_column:
         # evaluteEquation = lambda x: equation_string
         # return evaluteEquation(1st value of x from dataframe)
     # QUESTION: are we evaluating only one value of x from the dataframe, or somehow all the values of x? In other words, what specifically is the return value of this method?
+    # ANSWER: all values at the same time
+    # return value is a vector of the same length as x. Eval
     # 
     # value = eval(equation_string)
     # figure out when eval(x) x has already been created
@@ -120,7 +123,9 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-        
+def customAssert( condition, action ):
+    if not condition: raise action
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog='symbolic_regression.py', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -148,7 +153,7 @@ if __name__ == "__main__":
     csv_path = arguments.csv_path
     inputted_operators = arguments.operators
 
-    dataframe = pandas.read_csv(csv_path)
+    dataframe = pandas.read_csv(csv_path)  # maybe create a new class
     operator_arity = {"add": 2,
                       "sub": 2,
                       "div": 2,
@@ -164,9 +169,10 @@ if __name__ == "__main__":
 
     pset = pg.PrimitiveSet()
     for operator in inputted_operators:
-        assert operator in operator_arity.keys()  # Make sure the operators entered are allowed
+        customAssert(operator in operator_arity.keys(), Exception("Invalid operator entered {}. Permitted operators: add,sub,mul,div,pow,sin,cos,tan,exp,log,sinh,cosh,tanh.".format(operator)))
+        assert operator in operator_arity.keys()
         pset.add_operator(operator, operator_arity[operator])
-    for variable in dataframe.columns:
+    for variable in dataframe.columns[:-1]:
         pset.add_variable(variable)
     enum = pg.Enumerator(pset)
     
@@ -242,3 +248,5 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid value for exhaustive")
     pg.ResultList(output_db)
+
+
