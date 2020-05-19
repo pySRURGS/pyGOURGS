@@ -5,9 +5,10 @@ import numpy
 import pdb
 from functools import partial
 import multiprocessing as mp
-
+import numpy
 import pandas as pandas
 import parmap
+import numexpr as ne
 import tqdm
 import sys,os
 pygourgs_dir = os.path.join('..', 'pyGOURGS')
@@ -36,38 +37,43 @@ def solution_saving_worker(queue, n_items, output_db):
                 results_dict.commit()
         results_dict.commit()
 
-def evalSymbolicRegression(equation_string):
+def evalSymbolicRegression(equation_string, data, mode='residual'):
     """
         Evaluates the proposed solution to its numerical value
     """
-    # print(equation_string)
-    # pdb.set_trace()
-    # QUESTION: if we're predicting y using x, only x should be considered in the equation_string?
-    # for x_value in x_column:
-        # evaluteEquation = lambda x: equation_string
-        # return evaluteEquation(1st value of x from dataframe)
-    # QUESTION: are we evaluating only one value of x from the dataframe, or somehow all the values of x? In other words, what specifically is the return value of this method?
-    # ANSWER: all values at the same time
-    # return value is a vector of the same length as x. Eval
-    # 
-    # value = eval(equation_string)
-    # figure out when eval(x) x has already been created
-    # better to have dict like object instead of having multiple variable.
-    # dict keys names of varialbes, values the arrays of data
-    # TODO
-    # this logic is not correct and needs to be written. Take this quartic polynomial csv file
-    # and predict y from x. 
-    # the user defined variables and fitting parameters will not be in this 
-    # scope
-    #   If user gives us a CSV with header x,y,z we want to ensure that 
-    #   whatever these names are, we can access their arrays within this function
+    # TODO need to add weights, fitting parameters, and simplify equations
+    data_dict = data.get_data_dict()
+    independent_vars_vector, x_label = data.get_independent_data()  # x vector (or more)
+    dependent_var_vector, y_label = data.get_dependent_data()  # y vector
+    y_predicted = ne.evaluate(equation_string, local_dict=data_dict)  # evaluates the equation using the dict to retrieve
+    # the values of the variables
+
+    y_actual = dependent_var_vector
+
+    if mode == 'residual':
+        residual = y_actual - y_predicted
+        # if data._data_weights is not None:  # TODO
+        #     residual = numpy.multiply(residual, data._data_weights)
+        print(residual)
+        output = float(numpy.sum(residual**2))  # residual sum of squares
+    elif mode == 'y_calc':
+        output = y_predicted
+    elif type(mode) == dict:  # QUESTION: what is this?
+        df = mode
+        y_value = eval(equation_string)
+        output = y_value
+    if numpy.size(output) == 1:
+        # if model only has parameters and no data variables, we can have a
+        # situation where output is a single constant
+        output = numpy.resize(output, numpy.size(independent_vars_vector))
+
+    return output
     
     # TODO we need to ensure that fitting parameters are recognized and a suitable
     # nonlinear optimization package is used to find optimal values for these 
     # fitting parameters. We can try Levenburg-Marquardt algorithm via the LMFIT 
     # software https://lmfit.github.io/lmfit-py/ as was done in pySRURGS
     # raise Exception("fix this")
-    return 1
 
 # TODO
 # def simplify_equation_string(equation_string, ?more args):
@@ -93,11 +99,11 @@ def main_rando_queue(seed, enum, max_tree_complx, queue):
     score = evalSymbolicRegression(soln)    
     queue.put([score, soln])
 
-def main(soln):
+def main(soln, data):
     """
         evaluates a proposed solution
     """
-    score = evalSymbolicRegression(soln)    
+    score = evalSymbolicRegression(soln, data)
     return score, soln
 
 def main_queue(soln, queue):
@@ -123,8 +129,61 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def customAssert( condition, action ):
+def customAssert(condition, action):
+    """
+    Allows us to create custom assertions
+    """
     if not condition: raise action
+
+class DataHelper:
+    def __init__(self, dataframe, variables):
+        self.dataframe = dataframe
+        self.variables = variables
+        self.header_labels = []
+        for label in dataframe.columns[:]:
+            self.header_labels.append(label)
+
+        # self.y_label = y_label
+
+    def get_data_dict(self):
+        '''
+            Creates a dictionary object which houses the values in the dataset
+            CSV. The variable names in the CSV become keys in this data_dict
+            dictionary.
+        '''
+        data_dict = dict()
+        for label in self.header_labels:
+            data_dict[label] = numpy.array(self.dataframe[label].values).astype(float)
+            # check_for_nans(data_dict[label])
+        return data_dict
+
+    def get_independent_data(self):
+        '''
+            Loads all data in self._dataframe except the rightmost column
+            Example: f(x, y) = z, get_independent_data would return x, y
+        '''
+        dataframe = self.dataframe
+        header_labels = self.header_labels
+        features = dataframe.iloc[:, :-1]
+        features = numpy.array(features)
+        labels = header_labels[:-1]
+        # properties = dict() TODO?
+        # for label in labels:
+        #     properties.update(get_properties(dataframe[label], label))
+        return (features, labels)
+
+    def get_dependent_data(self):
+        '''
+            Loads only the rightmost column from self._dataframe
+            Example: f(x, y) = z, get_dependent_data would return z
+        '''
+        dataframe = self.dataframe
+        header_labels = self.header_labels
+        feature = dataframe.iloc[:, -1]
+        feature = numpy.array(feature)
+        label = header_labels[-1]
+        # properties = get_properties(dataframe[label], label)
+        return (feature, label)
 
 if __name__ == "__main__":
 
@@ -154,6 +213,10 @@ if __name__ == "__main__":
     inputted_operators = arguments.operators
 
     dataframe = pandas.read_csv(csv_path)  # maybe create a new class
+    variables = []
+    for variable in dataframe.columns[:-1]:
+        variables.append(variable)
+    data = DataHelper(dataframe, variables)
     operator_arity = {"add": 2,
                       "sub": 2,
                       "div": 2,
@@ -171,7 +234,7 @@ if __name__ == "__main__":
     for operator in inputted_operators:
         customAssert(operator in operator_arity.keys(), Exception("Invalid operator entered {}. Permitted operators: add,sub,mul,div,pow,sin,cos,tan,exp,log,sinh,cosh,tanh.".format(operator)))
         pset.add_operator(operator, operator_arity[operator])
-    for variable in dataframe.columns[:-1]:
+    for variable in data.variables:  # TODO: add local varialbes and method that returns the independent vars labels
         pset.add_variable(variable)
     enum = pg.Enumerator(pset)
     
@@ -206,7 +269,7 @@ if __name__ == "__main__":
         elif multiproc == False:
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
-                score = main(soln)[0]
+                score = main(soln, data)[0]
                 pg.save_result_to_db(output_db, score, soln)
                 iter = iter + 1
                 if score > max_score:
@@ -247,5 +310,3 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid value for exhaustive")
     pg.ResultList(output_db)
-
-
