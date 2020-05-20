@@ -11,6 +11,10 @@ import parmap
 import numexpr as ne
 import tqdm
 import sys,os
+import sympy
+from math_funcs import (sympy_Sub, sympy_Div, sin, cos, tan, exp, log, sinh,
+                        cosh, tanh, sum, add, sub, mul, div, pow)
+from sympy import simplify, sympify, Symbol
 pygourgs_dir = os.path.join('..', 'pyGOURGS')
 if os.path.isfile(os.path.join(pygourgs_dir, 'pyGOURGS.py')) == False:
     msg = "Could not find pyGOURGS.py"
@@ -76,9 +80,21 @@ def evalSymbolicRegression(equation_string, data, mode='residual'):
     # raise Exception("fix this")
 
 # TODO
-# def simplify_equation_string(equation_string, ?more args):
+ def simplify_equation_string(equation_string, dataframe):
+         dataframe._sympy_namespace = dataframe.make_sympy_namespace()
+         s = sympy.sympify(equation_string, locals=dataframe._sympy_namespace)
+         try:
+             equation_string = str(sympy.simplify(s))
+        if 'zoo' in equation_string:  # zoo (complex infinity) in sympy
+            raise FloatingPointError
+       # equation_string = remove_variable_tags(equation_string)
+        #equation_string = remove_parameter_tags(equation_string)
+        return equation_string
+
+
 #   largely copy-paste from simplify_equation_string in pySRURGS.py
 #
+
 
 def main_rando(seed, enum, max_tree_complx):
     """
@@ -88,6 +104,8 @@ def main_rando(seed, enum, max_tree_complx):
     pdb.set_trace()
     score = evalSymbolicRegression(soln)    
     return score, soln
+
+
 
 def main_rando_queue(seed, enum, max_tree_complx, queue):
     """
@@ -184,6 +202,27 @@ class DataHelper:
         label = header_labels[-1]
         # properties = get_properties(dataframe[label], label)
         return (feature, label)
+
+    def make_sympy_namespace(self):
+        sympy_namespace = {}
+        for variable_name in self._x_labels:
+            sympy_namespace[variable_name] = sympy.Symbol(variable_name)
+        for param_name in self._param_names:
+            sympy_namespace[param_name] = sympy.Symbol(param_name)
+        sympy_namespace['add'] = sympy.Add
+        sympy_namespace['sub'] = sympy_Sub
+        sympy_namespace['mul'] = sympy.Mul
+        sympy_namespace['div'] = sympy_Div
+        sympy_namespace['pow'] = sympy.Pow
+        sympy_namespace['cos'] = sympy.Function('cos')
+        sympy_namespace['sin'] = sympy.Function('sin')
+        sympy_namespace['tan'] = sympy.Function('tan')
+        sympy_namespace['cosh'] = sympy.Function('cosh')
+        sympy_namespace['sinh'] = sympy.Function('sinh')
+        sympy_namespace['tanh'] = sympy.Function('tanh')
+        sympy_namespace['exp'] = sympy.Function('exp')
+        sympy_namespace['log'] = sympy.Function('log')
+        return sympy_namespace
 
 if __name__ == "__main__":
 
