@@ -157,8 +157,7 @@ class PrimitiveSet(object):
     """
     def __init__(self):
         self._variables = list()
-        self._fitting_parameters = list()  # use this instead of variables. I want to permidt a max of 3 fitting paramters. Need to consider the fitting parms as terminals.
-        # They will replace the terminals. Can add them to variables or fitting parameters. 
+        self._fitting_parameters = list()
         self._operators = dict()
         self._names = list()
 
