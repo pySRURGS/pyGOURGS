@@ -2,3 +2,6 @@ __pycache__
 dist
 build
 pyGOURGS.egg-info
+/venv/
+.idea
+test_db
