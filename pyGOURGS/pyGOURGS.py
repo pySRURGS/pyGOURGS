@@ -899,11 +899,16 @@ class ResultList(object):
     self: ResultList
     """
     
-    def __init__(self, path_to_db):
+    def __init__(self, path_to_db, mode='maximize'):
         self._results = []
         self._path_to_db = path_to_db
         self.load()
-        self.sort()        
+        if mode == 'maximize':
+            self.sort(mode='maximize')
+        elif mode == 'minimize':
+            self.sort(mode='minimize')
+        else:
+            raise Exception("invalid sort mode in ResultList")
         self.print()
         
     def load(self):
@@ -917,13 +922,18 @@ class ResultList(object):
                 my_result = Result(input, score)
                 self._results.append(my_result)    
     
-    def sort(self):
+    def sort(self, mode='maximize'):
         """
-        Sorts the results in the result list by decreasing value of mean squared 
-        error.
+        Sorts the results in the result list by decreasing value of score.
         """
-        self._results = sorted(self._results, key=lambda x: x._score, 
-                               reverse=True)
+        if mode == 'maximize':
+            self._results = sorted(self._results, key=lambda x: x._score, 
+                                   reverse=True)
+        elif mode == 'minimize':
+            self._results = sorted(self._results, key=lambda x: x._score, 
+                                   reverse=False)
+        else:
+            raise Exception("Invalid mode in ResultList.sort")
 
     def count_nodes(self):
         """

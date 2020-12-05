@@ -21,6 +21,10 @@ def tan(x):
     return np.tan(x)
 
 
+def sqrt(x):
+    return np.sqrt(x)
+
+
 def exp(x):
     return np.exp(x)
 
