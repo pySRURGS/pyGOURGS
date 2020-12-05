@@ -789,5 +789,3 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid value for exhaustive")
     halloffame.save_to_json()
-    pg.ResultList(output_db, mode='minimize')
-    plot_results(SR_config)
