@@ -1,5 +1,4 @@
 # Symbolic regression using PyGOURGS
-# Uses a HallOfFame object instead of save to file.
 # Sohrab Towfighi BASc MD, Copyright 2020
 
 
@@ -19,7 +18,7 @@ import sys,os
 import sympy
 from operator import itemgetter
 from math_funcs import (sympy_Sub, sympy_Div, sin, cos, tan, exp, log, sinh,
-                        cosh, tanh, sum, add, sub, mul, div, pow)
+                        cosh, tanh, sum, add, sub, mul, div, pow, sqrt)
 from sympy import simplify, sympify, Symbol
 pygourgs_dir = os.path.join('..', 'pyGOURGS')
 if os.path.isfile(os.path.join(pygourgs_dir, 'pyGOURGS.py')) == False:
@@ -33,14 +32,27 @@ import argparse
 import json
 import sklearn.metrics as metrics
 
+
 def regression_results(y_true, y_pred):
-    # Regression metrics
-    explained_variance=metrics.explained_variance_score(y_true, y_pred)
-    mean_absolute_error=metrics.mean_absolute_error(y_true, y_pred) 
-    mse=metrics.mean_squared_error(y_true, y_pred) 
-    mean_squared_log_error=metrics.mean_squared_log_error(y_true, y_pred)
-    median_absolute_error=metrics.median_absolute_error(y_true, y_pred)
-    r2=metrics.r2_score(y_true, y_pred)
+    '''
+        Returns a dictionary object with regression performance metrics 
+        housed internally. The goal of EvalSymbolicRegression can be 
+        set to any of the keys of this dictionary.
+    '''
+    try:
+        explained_variance = metrics.explained_variance_score(y_true, y_pred)
+        mean_absolute_error = metrics.mean_absolute_error(y_true, y_pred) 
+        mse = metrics.mean_squared_error(y_true, y_pred) 
+        mean_squared_log_error = metrics.mean_squared_log_error(y_true, y_pred)
+        median_absolute_error = metrics.median_absolute_error(y_true, y_pred)
+        r2 = metrics.r2_score(y_true, y_pred)
+    except ValueError: # infinity, nans, etc
+        explained_variance = 0
+        mean_absolute_error = np.inf
+        mse = np.inf
+        mean_squared_log_error = np.inf
+        median_absolute_error = np.inf
+        r2 = np.inf
     results_dict = {'explained_variance': explained_variance,
                     'mean_absolute_error': mean_absolute_error,
                     'mse': mse,
@@ -49,10 +61,12 @@ def regression_results(y_true, y_pred):
                     'r2': r2}
     return results_dict
 
+
 class HallOfFame(object):
     def __init__(self, max_len, path_to_json):
         self._hof  = list()
         self._max_len = max_len
+        self._path_to_json = path_to_json
     def insert(self, item, fitness, parameters, metrics, mode='min'):
         if mode not in ['min', 'max', 'zero']:
             raise Exception("Invalid mode")
@@ -72,15 +86,20 @@ class HallOfFame(object):
                           str(parameters), 
                           str(metrics)])
         self._hof = sorted(self._hof, key=itemgetter(1))
-        long_len = len(self._hof)
-        pdb.set_trace()
-        for i in range(0, long_len - max_len):
+        long_len = len(self._hof)        
+        for i in range(0, long_len - self._max_len):
             del self._hof[-1]
     def save_to_json(self):
         jsonStr = json.dumps(self._hof)
-        with open(path_to_json, 'w+') as myfile:
+        with open(self._path_to_json, 'w+') as myfile:
             myfile.write(jsonStr)
-
+    def print_best(self):
+        best_soln = self._hof[0]
+        print("###############################################################")
+        print('Best equation:', best_soln[0], '\n')
+        print('Fitting parameter values:', best_soln[2], '\n')
+        print('Goodness of fit metrics:', best_soln[3])
+        print("###############################################################")
 
 # GLOBAL VARIABLES
 fitting_param_prefix = "p" #'begin_fitting_param_'
@@ -333,8 +352,12 @@ class Dataset(object):
         self._header_labels = header_labels
         x_data, x_labels = self.get_independent_data()
         y_data, y_label  = self.get_dependent_data()
+        illegal_keyphrases = ['nan', 'zoo']
+        for illegal in illegal_keyphrases:
+            if illegal in (x_labels + y_label):
+                raise Exception("'zoo' & 'nan' illegal in variable names")
         self._x_data = x_data
-        self._x_labels = x_labels
+        self._x_labels = x_labels        
         self._y_data = y_data
         self._y_label = y_label        
         if np.std(self._y_data) == 0:
@@ -536,22 +559,24 @@ def evalSymbolicRegression(equation_string, SR_config,
     exec(code)
     # fit the parameters
     params = SR_config._dataset._params
-    try:
+    try:        
         result = lmfit.minimize(locals()['equation'], 
                                 params,
                                 args=variables,
                                 method='leastsq', 
-                                nan_policy='propagate')
+                                nan_policy='raise')
         residual = result.residual
+        params = result.params
     except ValueError:
-        residual = np.inf
+        residual = np.inf    
     y_true = independent_vars_vector
-    y_pred = y_true - result.residual
+    y_true = y_true.reshape(y_true.shape[0])
+    y_pred = y_true - residual
     results_dict = regression_results(y_true, y_pred)
-    if scoretype == 'mean_absolute_error':
-        score = results_dict['mean_absolute_error']
-    else:
-        raise Exception("Undefined scoretype")
+    try:
+        score = results_dict[scoretype]
+    except KeyError:
+        raise Exception("Invalid scoretype")
     return score, params, results_dict
     
     
@@ -585,6 +610,8 @@ def simplify_equation_string(eqn_str, dataset):
         pass
     if 'zoo' in eqn_str:  # zoo (complex infinity) in sympy
         return 'np.inf'
+    if 'nan' in eqn_str:  # nan in sympy
+        return 'np.inf'    
     return eqn_str
 
 
@@ -664,7 +691,7 @@ if __name__ == "__main__":
     parser.add_argument("-funcs_arity_two", help="a comma separated string listing the functions of arity two you want to be considered. Permitted:add,sub,mul,div,pow", default='add,sub,mul,div,pow')
     parser.add_argument("-funcs_arity_one", help="a comma separated string listing the functions of arity one you want to be considered. Permitted:sin,cos,tan,exp,log,sinh,cosh,tanh")
     parser.add_argument("-num_trees", help="pyGOURGS iterates through all the possible trees using an enumeration scheme. This argument specifies the number of trees to which we restrict our search.", type=int, default=1000)
-    parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=10000)
+    parser.add_argument("-num_iters", help="An integer specifying the number of search strategies to be attempted in this run", type=int, default=200)
     parser.add_argument("-max_num_fit_params", help="the maximum number of fitting parameters permitted in the generated models", default=3, type=int)
     parser.add_argument("-freq_print", help="An integer specifying how many strategies should be attempted before printing current job status", type=int, default=10)
     parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=str2bool, default=False)
@@ -712,7 +739,7 @@ if __name__ == "__main__":
     halloffame = HallOfFame(100, output_db)
     if deterministic == False:
         deterministic = None
-    best_score = 0
+    best_score = np.inf
     iter = 0
     manager = mp.Manager()
     queue = manager.Queue()
@@ -735,7 +762,7 @@ if __name__ == "__main__":
                 soln = simplify_equation_string(soln, SR_config._dataset)
                 jobs.append(soln)
                 iter = iter + 1
-                print('\r' + "Progress: " + str(iter/num_solns), end='')
+                print("\033[K" + "Progress: " + str(iter/num_solns), end='\r')
             results = parmap.map(main_queued, jobs, queue=queue,
                                  pm_pbar=True, pm_chunksize=3)
             runner.join()
@@ -750,8 +777,8 @@ if __name__ == "__main__":
                 if score < best_score:
                     best_score = score
                 if iter % frequency_printing == 0:
-                    print("best score of this run:" + str(best_score), 
-                          'iteration:'+ str(iter), end='\r')
+                    print("\033[K" + "best score of this run:" + 
+                          str(best_score), 'iteration:'+ str(iter), end='\r')
         else:
             raise Exception("Invalid value multiproc must be true/false")
     elif exhaustive == False:
@@ -773,7 +800,7 @@ if __name__ == "__main__":
                                                   maximum_tree_complexity_index, 
                                                    n_iters, seed=deterministic):
                 soln = simplify_equation_string(soln, SR_config._dataset)
-                score, params, metrics_dict = main(soln, SR_config)
+                score, params, metrics_dict, soln = main(soln, SR_config)
                 if np.isnan(score) == True:
                     score = np.inf
                 save_result_to_db(halloffame, output_db, score, params, 
@@ -782,10 +809,11 @@ if __name__ == "__main__":
                 if score < best_score:
                     best_score = score
                 if iter % frequency_printing == 0:
-                    print("best score of this run:" + str(best_score), 
-                          'iteration:'+ str(iter), end='\r')
+                    print("\033[K" + "best score of this run:" + 
+                          str(best_score), 'iteration:'+ str(iter), end='\r')
         else:
             raise Exception("Invalid multiproc, must be true/false")    
     else:
         raise Exception("Invalid value for exhaustive")
     halloffame.save_to_json()
+    halloffame.print_best()
