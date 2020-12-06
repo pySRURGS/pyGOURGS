@@ -471,6 +471,11 @@ class SymbolicRegressionConfig(object):
         in the CSV found in `path_to_csv`. If `None`, will assume all data 
         points are equally weighted.           
     
+    simplify_solutions: boolean
+        Should the equations be run through the simpify function to simplify 
+        them and mitigate duplicates
+        
+    
     Attributes
     ----------
     
@@ -492,7 +497,8 @@ class SymbolicRegressionConfig(object):
         self._f_functions, 
         self._max_num_fit_params, 
         self._max_permitted_trees,  
-        self._path_to_weights, and 
+        self._path_to_weights, 
+        self._simplify_solutions and 
         self._dataset.
     """
 
@@ -503,7 +509,8 @@ class SymbolicRegressionConfig(object):
                  f_functions,
                  max_num_fit_params,
                  max_permitted_trees,
-                 path_to_weights):  
+                 path_to_weights,
+                 simplify_solutions):  
         if path_to_db is None:
             path_to_db = create_db_name(path_to_csv)
         self._n_functions = n_functions
@@ -512,6 +519,7 @@ class SymbolicRegressionConfig(object):
         self._max_permitted_trees = max_permitted_trees        
         self._path_to_csv = path_to_csv
         self._path_to_db = path_to_db
+        self._simplify_solutions = simplify_solutions
         is_csv_valid(path_to_csv, True)
         self._path_to_weights = path_to_weights
         if path_to_weights is not None:
@@ -636,7 +644,8 @@ def main_random_queued(seed, enum, max_tree_complx, queue, SR_config):
         used for multiprocessing
     """
     soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
-    soln = simplify_equation_string(soln, SR_config._dataset)
+    if SR_config._simplify_solutions == True:
+        soln = simplify_equation_string(soln, SR_config._dataset)
     score, params, metrics_dict = evalSymbolicRegression(soln, SR_config)    
     queue.put([score, params, metrics_dict, soln])
 
@@ -688,6 +697,7 @@ if __name__ == "__main__":
     parser.add_argument("-deterministic", help="should algorithm be run in deterministic manner?", type=str2bool, default=False)
     parser.add_argument("-exhaustive", help="should algorithm be run in exhaustive/brute-force mode? This can run forever if you are not careful.", type=str2bool, default=False)
     parser.add_argument("-multiprocessing", help="should algorithm be run in multiprocessing mode?", type=str2bool, default=False)
+    parser.add_argument("-simplify_solutions", help="should solutions be simplified? time intensive. (default=True)", type=str2bool, default=True)
     parser.add_argument("output_db", help="An absolute filepath where we save results to a JSON database. Include the filename. Extension is typically '.txt'")
     if len(sys.argv) < 2:
         parser.print_usage()
@@ -707,6 +717,7 @@ if __name__ == "__main__":
     n_funcs = n_funcs.split(',')
     n_funcs = check_validity_suggested_functions(n_funcs, 2)
     f_funcs = arguments.funcs_arity_one
+    simplify_solutions = arguments.simplify_solutions
     if f_funcs is None or f_funcs == '':
         f_funcs = []
     else:
@@ -718,7 +729,8 @@ if __name__ == "__main__":
                                         f_funcs, 
                                         max_num_fit_params, 
                                         maximum_tree_complexity_index, 
-                                        weights_path)
+                                        weights_path,
+                                        simplify_solutions)
     pset = pg.PrimitiveSet()
     for operator_arity_2 in n_funcs:        
         pset.add_operator(operator_arity_2, 2)
@@ -750,7 +762,8 @@ if __name__ == "__main__":
             runner.start()
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
-                soln = simplify_equation_string(soln, SR_config._dataset)
+                if SR_config._simplify_solutions == True:
+                    soln = simplify_equation_string(soln, SR_config._dataset)
                 jobs.append(soln)
                 iter = iter + 1
                 print("\033[K" + "Progress: " + str(iter/num_solns), end='\r')
@@ -760,7 +773,8 @@ if __name__ == "__main__":
         elif multiproc == False:
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
-                soln = simplify_equation_string(soln, SR_config._dataset)
+                if SR_config._simplify_solutions == True:
+                    soln = simplify_equation_string(soln, SR_config._dataset)
                 score, params, metrics_dict, soln = main(soln, SR_config)
                 halloffame.insert(soln, score, params, metrics_dict)
                 iter = iter + 1
@@ -790,7 +804,8 @@ if __name__ == "__main__":
             for soln in enum.uniform_random_global_search(
                                                   maximum_tree_complexity_index, 
                                                    n_iters, seed=deterministic):
-                soln = simplify_equation_string(soln, SR_config._dataset)
+                if SR_config._simplify_solutions == True:
+                    soln = simplify_equation_string(soln, SR_config._dataset)
                 score, params, metrics_dict, soln = main(soln, SR_config)
                 if np.isnan(score) == True:
                     score = np.inf

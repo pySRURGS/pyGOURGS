@@ -49,6 +49,8 @@ class TestSymbolicRegression(unittest.TestCase):
                    './weights.csv',
                    '-num_iters',
                    '1000',
+                   '-simplify_solutions',
+                   'False',
                    './weights_data.csv', 
                    './test_output.json')
         time1 = time.time()
@@ -58,6 +60,8 @@ class TestSymbolicRegression(unittest.TestCase):
                    './weights.csv', 
                    '-multiprocessing', 
                    'True',
+                   '-simplify_solutions',
+                   'False',
                    '-num_iters',
                    '1000',
                    './weights_data.csv',                    
