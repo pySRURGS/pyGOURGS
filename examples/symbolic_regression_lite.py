@@ -335,17 +335,17 @@ class Dataset(object):
                  int_max_params, 
                  path_to_weights):
         (dataframe, header_labels) = self.load_csv_data(path_to_csv_file)
-        if path_to_weights is not None:
-            (weights_df, empty_labels) = self.load_csv_data(path_to_weights, 
-                                                            header=None)            
-            self._data_weights = np.squeeze(weights_df.values)
-        else: 
-            self._data_weights = None
         self._int_max_params = int_max_params
         self._dataframe = dataframe
         self._header_labels = header_labels
         x_data, x_labels = self.get_independent_data()
         y_data, y_label  = self.get_dependent_data()
+        if path_to_weights is not None:
+            (weights_df, empty_labels) = self.load_csv_data(path_to_weights, 
+                                                            header=None)            
+            self._data_weights = np.squeeze(weights_df.values)
+        else:
+            self._data_weights = np.ones((len(y_data)))
         illegal_keyphrases = ['nan', 'zoo']
         for illegal in illegal_keyphrases:
             if illegal in (x_labels + y_label):
@@ -537,13 +537,14 @@ def evalSymbolicRegression(equation_string, SR_config,
     """
     data_dict = SR_config._dataset.get_data_dict()
     independent_vars_vector, x_label = SR_config._dataset.get_independent_data()
+    dependent_var_vector, y_label = SR_config._dataset.get_dependent_data()
     # the order of insertion xlabels, then 'weights' matters.
     variables = []
     for i in range(0, len(x_label)):
         variables.append(independent_vars_vector[:,i])
     variables.append(SR_config._dataset._data_weights)
-    variables = tuple(variables)
-    dependent_var_vector, y_label = SR_config._dataset.get_dependent_data()
+    variables.append(dependent_var_vector)
+    variables = tuple(variables)    
     parameters = create_fitting_parameters(SR_config._max_num_fit_params)
     # format the params variables in such a manner as to be dict accessible
     for i in range(0, SR_config._max_num_fit_params):
@@ -553,15 +554,15 @@ def evalSymbolicRegression(equation_string, SR_config,
     # again, the order of 'params', xlabels, 'weights' matters.
     args = str(tuple(['params'] + 
                SR_config._dataset._x_labels.tolist() + 
-               ['weights']))
+               ['weights', 'y_true']))
     args = args.replace("'", "")
     args = args.replace(" ", "")
-    code = "def equation {args}: return ({code}) * weights".format(args=args, 
+    code = "def equation {args}: return (({code}) - y_true) * weights".format(args=args, 
                                                            code=equation_string)    
     exec(code)
     # fit the parameters
     params = SR_config._dataset._params
-    try:        
+    try:
         result = lmfit.minimize(locals()['equation'], 
                                 params,
                                 args=variables,
@@ -570,15 +571,16 @@ def evalSymbolicRegression(equation_string, SR_config,
         residual = result.residual
         params = result.params
     except ValueError:
-        residual = np.inf    
-    y_true = independent_vars_vector
-    y_true = y_true.reshape(y_true.shape[0])
+        residual = np.inf 
+    y_true = dependent_var_vector
     y_pred = y_true - residual
     results_dict = regression_results(y_true, y_pred)
     try:
         score = results_dict[scoretype]
     except KeyError:
         raise Exception("Invalid scoretype")
+    if score == 0:
+        pdb.set_trace()
     return score, params, results_dict
     
     
