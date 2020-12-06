@@ -64,7 +64,8 @@ def regression_results(y_true, y_pred):
 
 class HallOfFame(object):
     def __init__(self, max_len, path_to_json):
-        self._hof  = list()
+        self._manager = mp.Manager()
+        self._hof  = self._manager.list()
         self._max_len = max_len
         self._path_to_json = path_to_json
     def insert(self, item, fitness, parameters, metrics, mode='min'):
@@ -90,7 +91,7 @@ class HallOfFame(object):
         for i in range(0, long_len - self._max_len):
             del self._hof[-1]
     def save_to_json(self):
-        jsonStr = json.dumps(self._hof)
+        jsonStr = json.dumps(list(self._hof))
         with open(self._path_to_json, 'w+') as myfile:
             myfile.write(jsonStr)
     def print_best(self):
@@ -106,13 +107,6 @@ fitting_param_prefix = "p" #'begin_fitting_param_'
 fitting_param_suffix = "" #'_end_fitting_param'
 variable_prefix = '' #'begin_variable_'
 variable_suffix = '' #'_end_variable'
-
-
-def save_result_to_db(hof, path_to_db, score, parameters, metrics, input):
-    '''
-        Saves results to the JSON file 
-    '''
-    hof.insert(input, score, parameters, metrics)
 
 
 def has_nans(X):
@@ -615,18 +609,15 @@ def simplify_equation_string(eqn_str, dataset):
     return eqn_str
 
 
-def solution_saving_worker(queue, n_items, output_db):
+def solution_saving_worker(queue, n_items, output_db, halloffame):
     """
         Takes solutions from the queue of evaluated solutions, 
         then saves them to the database.
     """
     checkpoint = int(n_items/100) + 1
     for j in range(0, n_items):
-        [score, params, soln] = queue.get()
-        results_dict[soln] = (score, params)
-        if j == checkpoint:
-            print('  Saving results to db: ' + str(j/n_items))
-            results_dict.commit()
+        [score, params, metrics, soln] = queue.get()
+        halloffame.insert(soln, score, params, metrics)
 
 
 def main_random(seed, enum, max_tree_complx, SR_config):
@@ -646,7 +637,7 @@ def main_random_queued(seed, enum, max_tree_complx, queue, SR_config):
     """
     soln = enum.uniform_random_global_search_once(max_tree_complx, seed=seed)
     soln = simplify_equation_string(soln, SR_config._dataset)
-    score, params = evalSymbolicRegression(soln, SR_config)    
+    score, params, metrics_dict = evalSymbolicRegression(soln, SR_config)    
     queue.put([score, params, metrics_dict, soln])
 
 
@@ -658,13 +649,13 @@ def main(soln, SR_config):
     return score, params, metrics_dict, soln
 
 
-def main_queued(soln, queue):
+def main_queued(soln, SR_config, queue):
     """
         evaluates a proposed solution
         and puts the solution in the queue
         used for multiprocessing
     """
-    score, params, metrics_dict = evalSymbolicRegression(soln)    
+    score, params, metrics_dict = evalSymbolicRegression(soln, SR_config)    
     queue.put([score, params, metrics_dict, soln])
 
 
@@ -755,7 +746,7 @@ if __name__ == "__main__":
         if multiproc == True:
             jobs = []
             runner = mp.Process(target=solution_saving_worker, 
-                             args=(queue, num_solns, output_db))
+                             args=(queue, num_solns, output_db, halloffame))
             runner.start()
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
@@ -763,16 +754,15 @@ if __name__ == "__main__":
                 jobs.append(soln)
                 iter = iter + 1
                 print("\033[K" + "Progress: " + str(iter/num_solns), end='\r')
-            results = parmap.map(main_queued, jobs, queue=queue,
-                                 pm_pbar=True, pm_chunksize=3)
+            results = parmap.map(main_queued, jobs, SR_config=SR_config, 
+                                 queue=queue, pm_pbar=True, pm_chunksize=3)
             runner.join()
         elif multiproc == False:
             for soln in enum.exhaustive_global_search(
                                                  maximum_tree_complexity_index):
                 soln = simplify_equation_string(soln, SR_config._dataset)
                 score, params, metrics_dict, soln = main(soln, SR_config)
-                save_result_to_db(halloffame, output_db, score, params, 
-                                  metrics_dict, soln)
+                halloffame.insert(soln, score, params, metrics_dict)
                 iter = iter + 1
                 if score < best_score:
                     best_score = score
@@ -789,11 +779,12 @@ if __name__ == "__main__":
             seeds = seeds*current_time
             seeds = seeds.tolist()
             runner = mp.Process(target=solution_saving_worker, 
-                             args=(queue, num_solns, output_db))
+                             args=(queue, num_solns, output_db, halloffame))
             runner.start()
             results = parmap.map(main_random_queued, seeds, enum=enum, 
                                  max_tree_complx=maximum_tree_complexity_index, 
-                                 queue=queue, pm_pbar=True, pm_chunksize=3)
+                                 queue=queue, SR_config=SR_config, 
+                                 pm_pbar=True, pm_chunksize=3)
             runner.join()
         elif multiproc == False:
             for soln in enum.uniform_random_global_search(
@@ -803,8 +794,7 @@ if __name__ == "__main__":
                 score, params, metrics_dict, soln = main(soln, SR_config)
                 if np.isnan(score) == True:
                     score = np.inf
-                save_result_to_db(halloffame, output_db, score, params, 
-                                  metrics_dict, soln)
+                halloffame.insert(soln, score, params, metrics_dict)
                 iter = iter + 1
                 if score < best_score:
                     best_score = score

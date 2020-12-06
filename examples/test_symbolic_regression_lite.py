@@ -2,9 +2,11 @@ import os
 import sh
 import sys
 import types
+import time
 import unittest
 sys.path.append('./../pyGOURGS/')
 import pyGOURGS as pg
+import multiprocessing
 
 
 class TestSymbolicRegression(unittest.TestCase):
@@ -39,6 +41,32 @@ class TestSymbolicRegression(unittest.TestCase):
                    './weights.csv', 
                    './weights_data.csv', 
                    './test_output.json')
+
+    def test_multiprocessing_performance(self):
+        time0 = time.time()
+        sh.python3('./symbolic_regression_lite.py', 
+                    '-weights', 
+                   './weights.csv',
+                   '-num_iters',
+                   '1000',
+                   './weights_data.csv', 
+                   './test_output.json')
+        time1 = time.time()
+        diff1 = time1 - time0
+        sh.python3('./symbolic_regression_lite.py', 
+                    '-weights', 
+                   './weights.csv', 
+                   '-multiprocessing', 
+                   'True',
+                   '-num_iters',
+                   '1000',
+                   './weights_data.csv',                    
+                   './test_output.json')        
+        time2 = time.time()
+        diff2 = time2 - time1
+        print("Single Processing:", diff1)
+        print("Multiprocessing:", diff2)
+        print("Number cores:", multiprocessing.cpu_count())
 
 if __name__ == '__main__':
     unittest.main()
