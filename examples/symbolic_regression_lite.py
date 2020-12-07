@@ -68,7 +68,12 @@ class HallOfFame(object):
         self._hof  = self._manager.list()
         self._max_len = max_len
         self._path_to_json = path_to_json
+        self._counter = mp.Value('i',0)
+        with self._counter.get_lock():
+            self._counter.value = 0
     def insert(self, item, fitness, parameters, metrics, mode='min'):
+        with self._counter.get_lock():
+            self._counter.value += 1
         if mode not in ['min', 'max', 'zero']:
             raise Exception("Invalid mode")
         try:
@@ -824,3 +829,4 @@ if __name__ == "__main__":
         raise Exception("Invalid value for exhaustive")
     halloffame.save_to_json()
     halloffame.print_best()
+    print(halloffame._counter)
