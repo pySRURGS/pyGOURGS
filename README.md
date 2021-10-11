@@ -21,7 +21,7 @@ and computational optimization.
 
 ## Features 
 
-1. Developed and tested on Python 3.6
+1. Developed and tested on Python 3.8
 2. Can be run in deterministic mode for reproducibility
 3. Can also run an exhaustive/brute-force search
 4. API is similar to that of the popular DEAP genetic programming software
