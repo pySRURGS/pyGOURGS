@@ -12,3 +12,4 @@ tabulate==0.8.3
 parmap==1.5.2
 tqdm==4.32.2
 pandas==1.0.3
+sklearn==1.0
