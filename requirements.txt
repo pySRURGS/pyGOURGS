@@ -1,5 +1,6 @@
 numexpr
 sympy
+sh
 numpy==1.17.3
 mpmath==0.19
 pytest==5.1.1
