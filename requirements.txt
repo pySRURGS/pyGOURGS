@@ -1,7 +1,7 @@
-numexpr
-sympy
-sh
-lmfit
+numexpr==2.7.3
+sympy==1.9
+sh==1.14.2
+lmfit==1.0.2
 numpy==1.17.3
 mpmath==0.19
 pytest==5.1.1
