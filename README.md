@@ -29,7 +29,7 @@ and computational optimization.
 
 ## Getting Started
 
-The software is run using python 3.6. It is run using the terminal.
+The software is run using python 3.8. It is run using the terminal.
 
 
 ## Installing
