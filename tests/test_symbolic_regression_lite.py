@@ -3,9 +3,10 @@ import sh
 import sys
 import types
 import time
+import pdb
 import unittest
 sys.path.append('./../pyGOURGS/')
-import pyGOURGS as pg
+import pyGOURGS.pyGOURGS as pg
 import multiprocessing
 
 
@@ -36,6 +37,7 @@ class TestSymbolicRegression(unittest.TestCase):
         self.assertEqual(type(func), types.FunctionType)
 
     def test_cli(self):
+        os.chdir('./examples')
         sh.python3('./symbolic_regression_lite.py', 
                     '-weights', 
                    './weights.csv', 
@@ -43,7 +45,7 @@ class TestSymbolicRegression(unittest.TestCase):
                    './test_output.json')
 
     def test_multiprocessing_performance(self):
-        time0 = time.time()
+        time0 = time.time()        
         sh.python3('./symbolic_regression_lite.py', 
                     '-weights', 
                    './weights.csv',

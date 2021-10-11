@@ -3,7 +3,7 @@ import sys
 import types
 import unittest
 from operator import add, sub, truediv, mul
-sys.path.append(os.path.join('.', 'pyGOURGS'))
+sys.path.append(os.path.join('.','..', 'pyGOURGS'))
 import pyGOURGS.pyGOURGS as pg
 from pyGOURGS.pyGOURGS import decimal_to_base_m, base_m_to_decimal
 
