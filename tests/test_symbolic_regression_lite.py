@@ -4,8 +4,11 @@ import sys
 import types
 import time
 import pdb
+import inspect
 import unittest
-sys.path.append('./../pyGOURGS/')
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
 import pyGOURGS.pyGOURGS as pg
 import multiprocessing
 
@@ -50,7 +53,7 @@ class TestSymbolicRegression(unittest.TestCase):
                     '-weights', 
                    './weights.csv',
                    '-num_iters',
-                   '1000',
+                   '10',
                    '-simplify_solutions',
                    'False',
                    './weights_data.csv', 
@@ -65,7 +68,7 @@ class TestSymbolicRegression(unittest.TestCase):
                    '-simplify_solutions',
                    'False',
                    '-num_iters',
-                   '1000',
+                   '10',
                    './weights_data.csv',                    
                    './test_output.json')        
         time2 = time.time()
