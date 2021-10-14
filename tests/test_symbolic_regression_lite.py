@@ -8,6 +8,7 @@ import inspect
 import unittest
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
+
 sys.path.insert(0, parentdir) 
 import pyGOURGS.pyGOURGS as pg
 import multiprocessing
@@ -40,7 +41,7 @@ class TestSymbolicRegression(unittest.TestCase):
         self.assertEqual(type(func), types.FunctionType)
 
     def test_cli(self):
-        os.chdir('./examples')
+        os.chdir('./../examples')
         sh.python3('./symbolic_regression_lite.py', 
                     '-weights', 
                    './weights.csv', 
