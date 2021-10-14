@@ -1,4 +1,5 @@
 ![Binoculars](image/pygourgs.png)
+
 [![Build Status](https://circleci.com/gh/pySRURGS/pyGOURGS.svg?style=shield)](https://circleci.com/gh/pySRURGS/pyGOURGS)
 [![status](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa/status.svg)](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa)
 [![Coverage Status](https://coveralls.io/repos/github/pySRURGS/pyGOURGS/badge.svg?branch=master&service=test)](https://coveralls.io/github/pySRURGS/pyGOURGS?branch=master)
