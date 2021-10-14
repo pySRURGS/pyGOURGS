@@ -37,6 +37,7 @@ jobs:
           name: Run tests
           # This assumes pytest is installed via the install-package step above
           command: |
+            cd tests
             pytest test.py
             pytest test_symbolic_regression_lite.py
 
