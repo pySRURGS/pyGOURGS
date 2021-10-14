@@ -3,7 +3,9 @@ import sys
 import types
 import unittest
 from operator import add, sub, truediv, mul
-sys.path.append(os.path.join('.','..', 'pyGOURGS'))
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 import pyGOURGS.pyGOURGS as pg
 from pyGOURGS.pyGOURGS import decimal_to_base_m, base_m_to_decimal
 
