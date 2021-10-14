@@ -2,7 +2,6 @@
 
 [![Build Status](https://circleci.com/gh/pySRURGS/pyGOURGS.svg?style=shield)](https://circleci.com/gh/pySRURGS/pyGOURGS)
 [![status](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa/status.svg)](https://joss.theoj.org/papers/17180193c5f25d3cc1edb460bc1335aa)
-[![Coverage Status](https://coveralls.io/repos/github/pySRURGS/pyGOURGS/badge.svg?branch=master&service=test)](https://coveralls.io/github/pySRURGS/pyGOURGS?branch=master)
 [![License: GPL v3](image/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![python versions](image/python-3_6_3_7-blue.svg)](https://www.python.org)
 [![DOI](https://zenodo.org/badge/223265114.svg)](https://zenodo.org/badge/latestdoi/223265114)
